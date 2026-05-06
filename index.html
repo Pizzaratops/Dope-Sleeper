@@ -127,6 +127,23 @@
   .tp-name{flex:1;font-size:13px;font-weight:500;}
   .draft-note{padding:10px 18px 14px;font-size:12px;color:var(--muted);font-style:italic;line-height:1.55;border-top:1px solid var(--border);}
 
+  /* ── Liga overview ── */
+  .liga-overview{padding:20px 40px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+  .liga-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;}
+  .liga-card-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);}
+  .liga-card-val{font-size:15px;font-weight:700;}
+  .liga-card-sub{font-size:11px;color:var(--muted);}
+  .liga-divider{height:1px;background:var(--border);margin:20px 40px 0;}
+
+  /* Best pick highlight */
+  .tp-row.best-pick{background:rgba(62,207,142,0.06);border-radius:6px;padding-left:6px;padding-right:6px;margin:0 -6px;}
+  [data-theme="light"] .tp-row.best-pick{background:rgba(31,168,112,0.07);}
+  .best-badge{font-size:9px;font-weight:700;letter-spacing:.5px;color:var(--green);background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.25);padding:1px 6px;border-radius:4px;white-space:nowrap;}
+
+  /* Trend warning */
+  .trend-warn{font-size:11px;color:var(--red);font-style:italic;padding:6px 18px 8px;border-top:1px solid rgba(248,113,113,.15);background:rgba(248,113,113,.04);}
+  .trend-warn-label{font-weight:600;font-style:normal;}
+
   .center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:360px;gap:20px;}
   .spinner{width:36px;height:36px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
   .load-txt{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
@@ -167,6 +184,7 @@
 <div class="tab-nav">
   <button class="tab active" onclick="switchTab('picks',this)">📋 Alle Picks</button>
   <button class="tab" onclick="switchTab('teams',this)">🏆 Team-Analyse</button>
+  <button class="tab" onclick="switchTab('liga',this)">🌍 Liga-Übersicht</button>
 </div>
 
 <div class="controls">
@@ -295,36 +313,55 @@ function stealInfo(pickNum,ktcRank){
   return        {label:"❌ Reach",cls:"steal-reach",d};
 }
 
-// ── Grade ─────────────────────────────────────────────────────────────────────
-function calcGrade(picks){
-  // Only picks R1–R3 (pick <= leagueSize*3) with KTC match
-  const leagueSize=12;
-  const valid=picks.filter(p=>p.ktcRank&&p.round<=3);
-  if(!valid.length) return{grade:"—",cls:"",avgValue:null,avgTier:null,avgTrend:null,note:"Keine bewertbaren Picks (R1–R3)."};
+// ── Grade (Steal-Delta + Rundenbonus + Trade-Malus/Bonus) ─────────────────────
+// Round multiplier: R1 steals count most, R4 still counts but less
+const ROUND_MULT={1:2.0, 2:1.3, 3:1.0, 4:0.5};
 
-  const avgVal  =Math.round(valid.reduce((s,p)=>s+(p.ktcValue||0),0)/valid.length);
+function weightedDelta(pick){
+  if(!pick.ktcRank||pick.round>4) return null;
+  const raw=pick.pickNum-pick.ktcRank; // positive=steal, negative=reach
+  return raw*(ROUND_MULT[pick.round]||0.5);
+}
+
+function calcGrade(picks, tradeBalance=0){
+  // R1–R4 with KTC match (R4 with half weight)
+  const valid=picks.filter(p=>p.ktcRank&&p.round<=4);
+  if(!valid.length) return{grade:"—",cls:"",score:null,avgTier:null,avgTrend:null,wDelta:null,tradeBalance,note:"Keine bewertbaren Picks."};
+
+  const deltas=valid.map(p=>weightedDelta(p)).filter(d=>d!==null);
+  const wDelta=deltas.length ? deltas.reduce((s,d)=>s+d,0)/deltas.length : 0;
+
   const avgTier =(valid.reduce((s,p)=>s+(p.ktcTier||5),0)/valid.length).toFixed(1);
   const avgTrend=(valid.reduce((s,p)=>s+(p.ktcTrend||0),0)/valid.length).toFixed(1);
-  const avgDelta=valid.reduce((s,p)=>s+(p.pickNum-p.ktcRank),0)/valid.length;
+  const avgVal  =Math.round(valid.reduce((s,p)=>s+(p.ktcValue||0),0)/valid.length);
+
+  // Trade adjustment: 1000 KTC value ≈ 0.5 score points
+  const tradeAdj = tradeBalance / 2000;
+  const score = wDelta + tradeAdj;
 
   let grade,cls,note;
-  if(avgVal>=4500||(avgVal>=3500&&avgDelta>=4)){grade="A+";cls="gA";note="Herausragendes Draft — Top-Werte und cleveres Timing.";}
-  else if(avgVal>=3200||(avgVal>=2600&&avgDelta>=4)){grade="A";cls="gA";note="Starkes Draft mit guten Value Picks.";}
-  else if(avgVal>=2200){grade="B+";cls="gB";note="Solides Draft, guter Durchschnittswert.";}
-  else if(avgVal>=1500){grade="B";cls="gB";note="Ordentliches Draft. Einige interessante Picks.";}
-  else if(avgVal>=900){grade="C";cls="gC";note="Durchwachsenes Draft — viele spätere Tier-Picks.";}
-  else{grade="D";cls="gD";note="Schwaches Draft nach KTC-Werten.";}
+  if(score>=12)     {grade="A+";cls="gA";note="Herausragendes Draft — exzellentes Steal-Timing und clevere Trades.";}
+  else if(score>=7) {grade="A"; cls="gA";note="Starkes Draft. Viele Picks später gegangen als ihr KTC-Rang.";}
+  else if(score>=3) {grade="B+";cls="gB";note="Gutes Draft mit positivem Steal-Saldo.";}
+  else if(score>=0) {grade="B"; cls="gB";note="Solides Draft — ungefähr Fair Value insgesamt.";}
+  else if(score>=-4){grade="C"; cls="gC";note="Durchwachsenes Draft — leicht zu viel bezahlt.";}
+  else              {grade="D"; cls="gD";note="Teures Draft — mehrere Reaches über Rundenbonus gewichtet.";}
 
-  if(avgDelta>=5) note+=" Sehr gutes Pick-Timing! ⏱";
-  else if(avgDelta<=-5) note+=" Mehrere teure Reaches.";
-  if(parseFloat(avgTrend)>8) note+=" Trend zeigt stark nach oben 📈";
-  else if(parseFloat(avgTrend)<-8) note+=" Vorsicht: Trend zeigt nach unten 📉";
+  const steals=valid.filter(p=>(p.pickNum-p.ktcRank)>=4);
+  const reaches=valid.filter(p=>(p.pickNum-p.ktcRank)<=-5);
+  if(steals.length>=2) note+=` ${steals.length}× Steal-Pick! 🎯`;
+  if(reaches.length>=2) note+=` ${reaches.length}× teurer Reach.`;
+  if(tradeBalance>=2000) note+=" Trades haben sich ausgezahlt 🔄✅";
+  else if(tradeBalance<=-2000) note+=" Trades haben Wert gekostet 🔄❌";
+  if(parseFloat(avgTrend)>8) note+=" Trend stark nach oben 📈";
+  else if(parseFloat(avgTrend)<-8) note+=" Vorsicht: Trend rückläufig 📉";
 
-  return{grade,cls,avgValue:avgVal,avgTier,avgTrend,note};
+  return{grade,cls,score:score.toFixed(1),avgTier,avgTrend,avgValue:avgVal,wDelta:wDelta.toFixed(1),tradeBalance,note};
 }
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let allRows=[];
+let tradeBalances={}; // drafter → net KTC value gained via trades
 let curTab="picks";
 let posFilter="ALL";
 let sortCol="pick",sortDir=1;
@@ -337,18 +374,24 @@ async function loadDraft(){
   if(!drafts?.length) throw new Error("Keine Drafts gefunden.");
   const draft=drafts.find(d=>d.type==="rookie")||drafts[0];
 
-  setStep("Picks + Manager laden…");
-  const[picks,users,rosters]=await Promise.all([
+  setStep("Picks + Manager + Trades laden…");
+  const[picks,users,rosters,transactions]=await Promise.all([
     fetch(`https://api.sleeper.app/v1/draft/${draft.draft_id}/picks`).then(r=>r.json()),
     fetch(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/users`).then(r=>r.json()),
     fetch(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/rosters`).then(r=>r.json()),
+    // Transactions for the draft period (nflweek 0 = pre-season/draft)
+    fetch(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/transactions/0`).then(r=>r.json()).catch(()=>[]),
   ]);
 
   const userMap={};
   users.forEach(u=>{userMap[u.user_id]=u.metadata?.team_name||u.display_name||u.username;});
   const rosterUser={};
   rosters.forEach(r=>{rosterUser[r.roster_id]=r.owner_id;});
+  const rosterName={};
+  rosters.forEach(r=>{rosterName[r.roster_id]=userMap[r.owner_id]||`Team ${r.roster_id}`;});
 
+  // Build pick→KTC value lookup by pick_no (slot position in draft)
+  // We'll resolve after allRows is built
   allRows=picks.map(pick=>{
     const m=pick.metadata||{};
     const fullName=(m.first_name&&m.last_name)?`${m.first_name} ${m.last_name}`:(m.name||pick.player_id||"?");
@@ -358,19 +401,42 @@ async function loadDraft(){
     const position=m.position||"?";
     const ktc=findKtc(fullName);
     return{fullName,pickNum,round:pick.round,drafter,position,
+      rosterId:pick.roster_id,
       ktcRank:ktc?.rank||null,ktcValue:ktc?.value||null,
       ktcTier:ktc?.tier||null,ktcTrend:ktc?.trend||null,
       ktcTeam:ktc?.nflTeam||m.team||""};
   });
 
-  setBadge("done",`${allRows.length} Picks geladen`);
+  // ── Trade analysis ────────────────────────────────────────────────────────
+  // Filter only draft-pick trades (type==="trade" with draft_picks moved)
+  tradeBalances={};
+  rosters.forEach(r=>{tradeBalances[rosterName[r.roster_id]]=0;});
+
+  if(Array.isArray(transactions)){
+    transactions.filter(t=>t.type==="trade"&&t.draft_picks?.length).forEach(trade=>{
+      // Each traded pick has: round, roster_id (original owner), owner_id (new owner)
+      // We estimate KTC value of the pick slot based on round
+      // Pick value estimate by round (average KTC values from our data)
+    const roundVal={1:4500,2:2200,3:900,4:150};
+      trade.draft_picks.forEach(dp=>{
+        const fromTeam=rosterName[dp.previous_owner_id]||rosterName[dp.roster_id];
+        const toTeam  =rosterName[dp.owner_id];
+        const val=roundVal[dp.round]||200;
+        if(fromTeam&&tradeBalances[fromTeam]!==undefined) tradeBalances[fromTeam]-=val;
+        if(toTeam  &&tradeBalances[toTeam]  !==undefined) tradeBalances[toTeam]  +=val;
+      });
+    });
+  }
+
+  setBadge("done",`${allRows.length} Picks · Trades analysiert`);
   renderView();
 }
 
-// ── Render ────────────────────────────────────────────────────────────────────
+// ── Render router ────────────────────────────────────────────────────────────
 function renderView(){
   if(curTab==="picks") renderPicks();
-  else renderTeams();
+  else if(curTab==="teams") renderTeams();
+  else renderLiga();
 }
 
 const tierCls=t=>["","t1","t2","t3","t4","t5"][Math.min(t||5,5)]||"t5";
@@ -446,31 +512,51 @@ function renderTeams(){
   const list=Object.entries(teams)
     .filter(([n])=>!q||norm(n).includes(q))
     .sort((a,b)=>{
-      // Sort by grade quality (avgValue of valid picks)
-      const ga=calcGrade(a[1]);
-      const gb=calcGrade(b[1]);
-      return (gb.avgValue||0)-(ga.avgValue||0);
+      const ga=calcGrade(a[1],tradeBalances[a[0]]||0);
+      const gb=calcGrade(b[1],tradeBalances[b[0]]||0);
+      return parseFloat(gb.score||0)-parseFloat(ga.score||0);
     });
 
   document.getElementById("main").innerHTML=`
     <div class="teams-grid">
       ${list.map(([name,picks])=>{
-        const g=calcGrade(picks);
+        const tb=tradeBalances[name]||0;
+        const g=calcGrade(picks,tb);
         const sorted=[...picks].sort((a,b)=>a.pickNum-b.pickNum);
-        const valid=picks.filter(p=>p.ktcRank&&p.round<=3);
-        const trendNum=parseFloat(g.avgTrend);
+        const valid=picks.filter(p=>p.ktcRank&&p.round<=4);
+        const trendNum=parseFloat(g.avgTrend||0);
+        const wD=parseFloat(g.wDelta||0);
+
+        // Best pick = highest weighted delta
+        const bestPick=valid.length
+          ? valid.reduce((best,p)=>((weightedDelta(p)||0)>(weightedDelta(best)||0)?p:best), valid[0])
+          : null;
+
+        // Trend warnings: picks with strong negative 30d trend
+        const trendWarns=picks.filter(p=>p.ktcTrend!=null&&p.ktcTrend<=-10);
+
         return`
         <div class="team-card">
           <div class="team-header">
             <div>
               <div class="team-name">${name}</div>
-              <div class="team-sub">${picks.length} Picks · ${valid.length} bewertet (R1–R3)</div>
+              <div class="team-sub">${picks.length} Picks · ${valid.length} bewertet (R1–R4) · Score: ${g.score||"—"}</div>
             </div>
             <div class="draft-grade ${g.cls}">${g.grade}</div>
           </div>
           <div class="team-stats">
-            <div class="tstat"><div class="tstat-label">Ø Value</div><div class="tstat-val">${g.avgValue!=null?g.avgValue.toLocaleString():"—"}</div></div>
-            <div class="tstat"><div class="tstat-label">Ø Tier</div><div class="tstat-val">${g.avgTier||"—"}</div></div>
+            <div class="tstat">
+              <div class="tstat-label">Ø Steal-Score</div>
+              <div class="tstat-val" style="color:${wD>0?"var(--green)":wD<0?"var(--red)":"var(--muted)"}">
+                ${g.wDelta!=null?(wD>=0?"+":"")+wD:"—"}
+              </div>
+            </div>
+            <div class="tstat">
+              <div class="tstat-label">Trade-Bilanz</div>
+              <div class="tstat-val" style="color:${tb>0?"var(--green)":tb<0?"var(--red)":"var(--muted)"}">
+                ${tb>0?"▲ +"+tb.toLocaleString():tb<0?"▼ "+tb.toLocaleString():"≈ 0"}
+              </div>
+            </div>
             <div class="tstat">
               <div class="tstat-label">Ø 30d Trend</div>
               <div class="tstat-val" style="color:${trendNum>0?"var(--green)":trendNum<0?"var(--red)":"var(--muted)"}">
@@ -481,16 +567,119 @@ function renderTeams(){
           <div class="team-picks-list">
             ${sorted.map(p=>{
               const st=stealInfo(p.pickNum,p.ktcRank);
-              return`<div class="tp-row">
+              const wd=weightedDelta(p);
+              const isBest=bestPick&&p.fullName===bestPick.fullName&&p.pickNum===bestPick.pickNum;
+              return`<div class="tp-row${isBest?" best-pick":""}">
                 <span class="tp-num">${p.pickNum}</span>
                 <span class="pos-badge ${p.position}" style="font-size:9px;padding:1px 6px">${p.position}</span>
                 <span class="tp-name">${p.fullName}</span>
+                ${isBest?`<span class="best-badge">⭐ Best Pick</span>`:""}
                 ${p.ktcTier?`<span class="tier-badge ${tierCls(p.ktcTier)}" style="font-size:9px;padding:1px 6px">T${p.ktcTier}</span>`:""}
-                ${st?`<span class="steal-badge ${st.cls}" style="font-size:9px;padding:2px 6px">${st.label}</span>`:""}
+                ${st?`<span class="steal-badge ${st.cls}" style="font-size:9px;padding:2px 6px">${st.label}${wd!==null?" ("+(wd>=0?"+":"")+wd.toFixed(1)+")":""}</span>`:""}
               </div>`;}).join("")}
           </div>
+          ${trendWarns.length?`
+          <div class="trend-warn">
+            <span class="trend-warn-label">⚠ Trend-Warnung:</span>
+            ${trendWarns.map(p=>`${p.fullName} (▼${Math.abs(p.ktcTrend)})`).join(", ")}
+          </div>`:""}
           <div class="draft-note">💬 ${g.note}</div>
         </div>`;}).join("")}
+    </div>`;
+}
+
+// ── Liga overview ─────────────────────────────────────────────────────────────
+function renderLiga(){
+  if(!allRows.length) return;
+
+  // Best steal of the draft
+  const withKtc=allRows.filter(p=>p.ktcRank);
+  const bestSteal=withKtc.length
+    ? withKtc.reduce((b,p)=>(weightedDelta(p)||0)>(weightedDelta(b)||0)?p:b, withKtc[0])
+    : null;
+  const biggestReach=withKtc.length
+    ? withKtc.reduce((b,p)=>(weightedDelta(p)||0)<(weightedDelta(b)||0)?p:b, withKtc[0])
+    : null;
+
+  // Best drafter by score
+  const teams={};
+  allRows.forEach(r=>{if(!teams[r.drafter])teams[r.drafter]=[];teams[r.drafter].push(r);});
+  const graded=Object.entries(teams).map(([n,p])=>({name:n,g:calcGrade(p,tradeBalances[n]||0)}))
+    .filter(x=>x.g.score!=null).sort((a,b)=>parseFloat(b.g.score)-parseFloat(a.g.score));
+  const bestDrafter=graded[0];
+  const worstDrafter=graded[graded.length-1];
+
+  // Biggest risers/fallers among drafted players
+  const risers=[...withKtc].filter(p=>p.ktcTrend>0).sort((a,b)=>b.ktcTrend-a.ktcTrend).slice(0,5);
+  const fallers=[...withKtc].filter(p=>p.ktcTrend<0).sort((a,b)=>a.ktcTrend-b.ktcTrend).slice(0,5);
+
+  // Position breakdown
+  const posCounts={};
+  allRows.forEach(r=>{posCounts[r.position]=(posCounts[r.position]||0)+1;});
+
+  // Total steals/reaches
+  const stealsAll=withKtc.filter(p=>(p.pickNum-p.ktcRank)>=4).length;
+  const reachesAll=withKtc.filter(p=>(p.pickNum-p.ktcRank)<=-5).length;
+
+  const bsWd=bestSteal?weightedDelta(bestSteal):null;
+  const brWd=biggestReach?weightedDelta(biggestReach):null;
+
+  document.getElementById("main").innerHTML=`
+    <div class="liga-overview">
+      ${bestDrafter?`<div class="liga-card">
+        <div class="liga-card-label">🏆 Bester Drafter</div>
+        <div class="liga-card-val" style="color:var(--green)">${bestDrafter.name}</div>
+        <div class="liga-card-sub">Score: ${bestDrafter.g.score} · Note: ${bestDrafter.g.grade}</div>
+      </div>`:""}
+      ${worstDrafter&&worstDrafter.name!==bestDrafter?.name?`<div class="liga-card">
+        <div class="liga-card-label">📉 Schlechtester Drafter</div>
+        <div class="liga-card-val" style="color:var(--red)">${worstDrafter.name}</div>
+        <div class="liga-card-sub">Score: ${worstDrafter.g.score} · Note: ${worstDrafter.g.grade}</div>
+      </div>`:""}
+      ${bestSteal?`<div class="liga-card">
+        <div class="liga-card-label">🔥 Größter Steal</div>
+        <div class="liga-card-val" style="color:var(--green)">${bestSteal.fullName}</div>
+        <div class="liga-card-sub">Pick #${bestSteal.pickNum} · KTC #${bestSteal.ktcRank} · Score ${bsWd>=0?"+":""}${bsWd?.toFixed(1)} · ${bestSteal.drafter}</div>
+      </div>`:""}
+      ${biggestReach?`<div class="liga-card">
+        <div class="liga-card-label">❌ Größter Reach</div>
+        <div class="liga-card-val" style="color:var(--red)">${biggestReach.fullName}</div>
+        <div class="liga-card-sub">Pick #${biggestReach.pickNum} · KTC #${biggestReach.ktcRank} · Score ${brWd>=0?"+":""}${brWd?.toFixed(1)} · ${biggestReach.drafter}</div>
+      </div>`:""}
+      <div class="liga-card">
+        <div class="liga-card-label">📊 Liga-Bilanz</div>
+        <div class="liga-card-val">${stealsAll} Steals · ${reachesAll} Reaches</div>
+        <div class="liga-card-sub">${allRows.length} Picks total</div>
+      </div>
+      <div class="liga-card">
+        <div class="liga-card-label">🏈 Position-Mix</div>
+        <div class="liga-card-val" style="font-size:13px;line-height:1.6">
+          ${Object.entries(posCounts).sort((a,b)=>b[1]-a[1]).map(([p,c])=>`<span class="pos-badge ${p}" style="font-size:9px;padding:1px 7px;margin-right:4px">${p}</span>${c}`).join("  ")}
+        </div>
+      </div>
+    </div>
+    <div class="liga-divider"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px 40px 60px">
+      <div>
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:12px">📈 Größte Steiger (gedraftete Spieler · 30d)</div>
+        ${risers.map((p,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span style="font-family:'Bebas Neue';font-size:18px;color:var(--dim);min-width:20px">${i+1}</span>
+          <span style="flex:1;font-size:13px;font-weight:500">${p.fullName}</span>
+          <span class="pos-badge ${p.position}" style="font-size:9px;padding:1px 6px">${p.position}</span>
+          <span style="color:var(--green);font-weight:700;font-size:13px">▲${p.ktcTrend}</span>
+          <span style="font-size:11px;color:var(--muted)">${p.drafter}</span>
+        </div>`).join("")}
+      </div>
+      <div>
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:12px">📉 Größte Faller (gedraftete Spieler · 30d)</div>
+        ${fallers.map((p,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span style="font-family:'Bebas Neue';font-size:18px;color:var(--dim);min-width:20px">${i+1}</span>
+          <span style="flex:1;font-size:13px;font-weight:500">${p.fullName}</span>
+          <span class="pos-badge ${p.position}" style="font-size:9px;padding:1px 6px">${p.position}</span>
+          <span style="color:var(--red);font-weight:700;font-size:13px">▼${Math.abs(p.ktcTrend)}</span>
+          <span style="font-size:11px;color:var(--muted)">${p.drafter}</span>
+        </div>`).join("")}
+      </div>
     </div>`;
 }
 
@@ -507,6 +696,8 @@ function switchTab(tab,btn){
   curTab=tab;
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   btn.classList.add("active");
+  // Hide/show controls row — liga overview doesn't need pos filter
+  document.querySelector(".controls").style.display=tab==="liga"?"none":"flex";
   if(allRows.length) renderView();
 }
 

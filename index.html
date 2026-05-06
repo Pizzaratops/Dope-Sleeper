@@ -493,82 +493,6 @@ function switchRanking(mode){
 }
 
 // ── Static Draft Data (hardcoded, kein API-Call nötig) ───────────────────────
-const ROSTER_NAMES={
-  1:"Tokyo Titi Twisters",
-  2:"American Wildfire Grizzlies",
-  3:"South Steglitz Sharknados",
-  4:"Blowout Arctic Yetis",
-  5:"Tempelhof Thunder Turtles",
-  6:"Angry Ducks",
-  7:"dseinn",
-  8:"Berlin Lightning Sloths",
-  9:"Husum Husos",
-  10:"Danfre",
-  11:"San José Salamancas",
-  12:"Team UnicornsRuegen",
-  13:"SvenNYG",
-  14:"Rio Rain Rats",
-};
-
-const STATIC_PICKS=[
-  {pick_no:1, round:1, roster_id:12, metadata:{first_name:"Jeremiyah",last_name:"Love",position:"RB",team:"ARI"}},
-  {pick_no:2, round:1, roster_id:11, metadata:{first_name:"Carnell",last_name:"Tate",position:"WR",team:"TEN"}},
-  {pick_no:3, round:1, roster_id:3,  metadata:{first_name:"Jadarian",last_name:"Price",position:"RB",team:"SEA"}},
-  {pick_no:4, round:1, roster_id:13, metadata:{first_name:"Jordyn",last_name:"Tyson",position:"WR",team:"NO"}},
-  {pick_no:5, round:1, roster_id:1,  metadata:{first_name:"Makai",last_name:"Lemon",position:"WR",team:"PHI"}},
-  {pick_no:6, round:1, roster_id:4,  metadata:{first_name:"Kenyon",last_name:"Sadiq",position:"TE",team:"NYJ"}},
-  {pick_no:7, round:1, roster_id:2,  metadata:{first_name:"KC",last_name:"Concepcion",position:"WR",team:"CLE"}},
-  {pick_no:8, round:1, roster_id:14, metadata:{first_name:"Eli",last_name:"Stowers",position:"TE",team:"PHI"}},
-  {pick_no:9, round:1, roster_id:1,  metadata:{first_name:"Omar",last_name:"Cooper",position:"WR",team:"NYJ"}},
-  {pick_no:10,round:1, roster_id:12, metadata:{first_name:"Denzel",last_name:"Boston",position:"WR",team:"CLE"}},
-  {pick_no:11,round:1, roster_id:8,  metadata:{first_name:"Jonah",last_name:"Coleman",position:"RB",team:"DEN"}},
-  {pick_no:12,round:1, roster_id:8,  metadata:{first_name:"Malachi",last_name:"Fields",position:"WR",team:"NYG"}},
-  {pick_no:13,round:1, roster_id:4,  metadata:{first_name:"Mike",last_name:"Washington",position:"RB",team:"LV"}},
-  {pick_no:14,round:1, roster_id:10, metadata:{first_name:"De'Zhaun",last_name:"Stribling",position:"WR",team:"SF"}},
-  {pick_no:15,round:2, roster_id:7,  metadata:{first_name:"Fernando",last_name:"Mendoza",position:"QB",team:"LV"}},
-  {pick_no:16,round:2, roster_id:12, metadata:{first_name:"Nicholas",last_name:"Singleton",position:"RB",team:"TEN"}},
-  {pick_no:17,round:2, roster_id:3,  metadata:{first_name:"Zachariah",last_name:"Branch",position:"WR",team:"ATL"}},
-  {pick_no:18,round:2, roster_id:13, metadata:{first_name:"Max",last_name:"Klare",position:"TE",team:"LAR"}},
-  {pick_no:19,round:2, roster_id:12, metadata:{first_name:"Emmett",last_name:"Johnson",position:"RB",team:"KC"}},
-  {pick_no:20,round:2, roster_id:12, metadata:{first_name:"Demond",last_name:"Claiborne",position:"RB",team:"MIN"}},
-  {pick_no:21,round:2, roster_id:5,  metadata:{first_name:"Antonio",last_name:"Williams",position:"WR",team:"WAS"}},
-  {pick_no:22,round:2, roster_id:14, metadata:{first_name:"Kaelon",last_name:"Black",position:"RB",team:"SF"}},
-  {pick_no:23,round:2, roster_id:12, metadata:{first_name:"Chris",last_name:"Bell",position:"WR",team:"MIA"}},
-  {pick_no:24,round:2, roster_id:6,  metadata:{first_name:"Germie",last_name:"Bernard",position:"WR",team:"PIT"}},
-  {pick_no:25,round:2, roster_id:14, metadata:{first_name:"Kaytron",last_name:"Allen",position:"RB",team:"WAS"}},
-  {pick_no:26,round:2, roster_id:12, metadata:{first_name:"J'Mari",last_name:"Taylor",position:"RB",team:"JAX"}},
-  {pick_no:27,round:2, roster_id:11, metadata:{first_name:"Ted",last_name:"Hurst",position:"WR",team:"TB"}},
-  {pick_no:28,round:2, roster_id:10, metadata:{first_name:"Chris",last_name:"Brazzell",position:"WR",team:"CAR"}},
-  {pick_no:29,round:3, roster_id:7,  metadata:{first_name:"Skyler",last_name:"Bell",position:"WR",team:"BUF"}},
-  {pick_no:30,round:3, roster_id:11, metadata:{first_name:"Ty",last_name:"Simpson",position:"QB",team:"LAR"}},
-  {pick_no:31,round:3, roster_id:8,  metadata:{first_name:"Elijah",last_name:"Sarratt",position:"WR",team:"BAL"}},
-  {pick_no:32,round:3, roster_id:13, metadata:{first_name:"Ja'Kobi",last_name:"Lane",position:"WR",team:"BAL"}},
-  {pick_no:33,round:3, roster_id:7,  metadata:{first_name:"Brenen",last_name:"Thompson",position:"WR",team:"LAC"}},
-  {pick_no:34,round:3, roster_id:2,  metadata:{first_name:"Michael",last_name:"Trigg",position:"TE",team:"DAL"}},
-  {pick_no:35,round:3, roster_id:10, metadata:{first_name:"Adam",last_name:"Randall",position:"RB",team:"BAL"}},
-  {pick_no:36,round:3, roster_id:14, metadata:{first_name:"Seth",last_name:"McGowan",position:"RB",team:"IND"}},
-  {pick_no:37,round:3, roster_id:4,  metadata:{first_name:"Eli",last_name:"Heidenreich",position:"RB",team:"PIT"}},
-  {pick_no:38,round:3, roster_id:8,  metadata:{first_name:"Oscar",last_name:"Delp",position:"TE",team:"NO"}},
-  {pick_no:39,round:3, roster_id:11, metadata:{first_name:"Jam",last_name:"Miller",position:"RB",team:"NE"}},
-  {pick_no:40,round:3, roster_id:8,  metadata:{first_name:"Jack",last_name:"Endries",position:"TE",team:"CIN"}},
-  {pick_no:41,round:3, roster_id:11, metadata:{first_name:"Justin",last_name:"Joly",position:"TE",team:"DEN"}},
-  {pick_no:42,round:3, roster_id:10, metadata:{first_name:"Le'Veon",last_name:"Moss",position:"RB",team:"MIA"}},
-  {pick_no:43,round:4, roster_id:7,  metadata:{first_name:"CJ",last_name:"Daniels",position:"WR",team:"LAR"}},
-  {pick_no:44,round:4, roster_id:11, metadata:{first_name:"Jaydn",last_name:"Ott",position:"RB",team:"KC"}},
-  {pick_no:45,round:4, roster_id:3,  metadata:{first_name:"Deion",last_name:"Burks",position:"WR",team:"IND"}},
-  {pick_no:46,round:4, roster_id:13, metadata:{first_name:"Bryce",last_name:"Lance",position:"WR",team:"NO"}},
-  {pick_no:47,round:4, roster_id:9,  metadata:{first_name:"Kevin",last_name:"Coleman",position:"WR",team:"MIA"}},
-  {pick_no:48,round:4, roster_id:4,  metadata:{first_name:"Roman",last_name:"Hemby",position:"RB",team:"LV"}},
-  {pick_no:49,round:4, roster_id:5,  metadata:{first_name:"Marlin",last_name:"Klein",position:"TE",team:"HOU"}},
-  {pick_no:50,round:4, roster_id:14, metadata:{first_name:"Dane",last_name:"Key",position:"WR",team:"DEN"}},
-  {pick_no:51,round:4, roster_id:4,  metadata:{first_name:"Josh",last_name:"Cameron",position:"WR",team:"JAX"}},
-  {pick_no:52,round:4, roster_id:12, metadata:{first_name:"Caleb",last_name:"Douglas",position:"WR",team:"MIA"}},
-  {pick_no:53,round:4, roster_id:12, metadata:{first_name:"Jeff",last_name:"Caldwell",position:"WR",team:"KC"}},
-  {pick_no:54,round:4, roster_id:12, metadata:{first_name:"Cade",last_name:"Klubnik",position:"QB",team:"NYJ"}},
-  {pick_no:55,round:4, roster_id:12, metadata:{first_name:"Drew",last_name:"Allar",position:"QB",team:"PIT"}},
-  {pick_no:56,round:4, roster_id:10, metadata:{first_name:"Carson",last_name:"Beck",position:"QB",team:"ARI"}},
-];
-
 // Draft-Pick Trades (from Sleeper transactions — Roster IDs that swapped picks)
 // Pick 9 (R1.09) was drafted by roster 1 but slot belonged to roster 1 — no trade needed
 // Known trades based on slot vs roster mismatches:
@@ -594,28 +518,100 @@ const STATIC_TRADE_BALANCES={
   "Rio Rain Rats":0,
 };
 
-function loadDraft(){
-  setStep("Draft-Daten aufbauen…");
+const LEAGUE_ID = "1312799736218017792";
 
-  allRows=STATIC_PICKS.map(pick=>{
-    const m=pick.metadata||{};
-    const fullName=`${m.first_name} ${m.last_name}`;
-    const pickNum=pick.pick_no;
-    const drafter=ROSTER_NAMES[pick.roster_id]||`Team ${pick.roster_id}`;
-    const position=m.position||"?";
-    const ktc=findKtc(fullName);
-    const fp=findFpSl(fullName,fpMap);
-    const sl=findFpSl(fullName,slMap);
-    return{fullName,pickNum,round:pick.round,drafter,position,
-      rosterId:pick.roster_id,
-      ktcRank:ktc?.rank||null, ktcValue:ktc?.value||null,
-      ktcTier:ktc?.tier||null, ktcTrend:ktc?.trend??null,
-      ktcTeam:ktc?.nflTeam||m.team||"",
-      fpRank:fp?.rank||null,   fpAdp:fp?.adp||null,
-      slRank:sl?.rank||null,   slAdp:sl?.adp||null, slMarketIndex:sl?.marketIndex??null,
-      compRank:null,compScore:null,compSpread:null,compSources:0};
+let rosterToUser = {};
+let userToTeam = {};
+
+// Lädt roster_id → user_id
+async function loadRosters() {
+  const res = await fetch(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/rosters`);
+  const data = await res.json();
+
+  rosterToUser = {};
+  data.forEach(r => {
+    rosterToUser[r.roster_id] = r.owner_id;
+  });
+}
+
+// Lädt user_id → team_name
+async function loadUsers() {
+  const res = await fetch(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/users`);
+  const data = await res.json();
+
+  userToTeam = {};
+  data.forEach(u => {
+    userToTeam[u.user_id] =
+      u.metadata?.team_name || u.display_name;
+  });
+}
+
+// finale Helper-Funktion
+function getTeamNameFromRoster(roster_id) {
+  const userId = rosterToUser[roster_id];
+  return userToTeam[userId] || `Team ${roster_id}`;
+}
+
+function getTeamNameFromUser(user_id) {
+  return userToTeam[user_id] || "Unknown Team";
+}
+
+async function loadDraft() {
+  setStep("Lade Sleeper Daten…");
+
+  await loadRosters();
+  await loadUsers();
+
+  const res = await fetch("https://api.sleeper.app/v1/draft/1314564602901581824/picks");
+  const picks = await res.json();
+
+  setStep("Verarbeite Picks…");
+
+  allRows = picks.map(pick => {
+    const m = pick.metadata || {};
+    const fullName = `${m.first_name || ""} ${m.last_name || ""}`.trim();
+
+    // 🔥 WICHTIG: picked_by statt roster_id verwenden
+    const drafter = getTeamNameFromUser(pick.picked_by);
+
+    // Fallback falls picked_by fehlt
+    const fallbackDrafter = getTeamNameFromRoster(pick.roster_id);
+
+    const ktc = findKtc(fullName);
+    const fp = findFpSl(fullName, fpMap);
+    const sl = findFpSl(fullName, slMap);
+
+    return {
+      fullName,
+      pickNum: pick.pick_no,
+      round: pick.round,
+      drafter: drafter || fallbackDrafter,
+      position: m.position || "?",
+
+      ktcRank: ktc?.rank || null,
+      ktcValue: ktc?.value || null,
+      ktcTier: ktc?.tier || null,
+      ktcTrend: ktc?.trend ?? null,
+      ktcTeam: ktc?.nflTeam || m.team || "",
+
+      fpRank: fp?.rank || null,
+      fpAdp: fp?.adp || null,
+
+      slRank: sl?.rank || null,
+      slAdp: sl?.adp || null,
+      slMarketIndex: sl?.marketIndex ?? null,
+
+      compRank: null,
+      compScore: null,
+      compSpread: null,
+      compSources: 0
+    };
   });
 
+  setBadge("done", `${allRows.length} Picks geladen`);
+  buildComposite();
+  renderView();
+}
   tradeBalances={...STATIC_TRADE_BALANCES};
 
   setBadge("done",`${allRows.length} Picks · ${LEAGUE_SIZE} Teams`);

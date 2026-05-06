@@ -136,11 +136,14 @@
   .liga-divider{height:1px;background:var(--border);margin:20px 40px 0;}
 
   /* Ranking toggle */
-  .rank-toggle{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px;}
-  .rtbtn{padding:4px 12px;border-radius:6px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans';font-size:11px;font-weight:600;letter-spacing:.5px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+  .rank-toggle{display:flex;align-items:center;gap:3px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px;flex-wrap:wrap;}
+  .rtbtn{padding:4px 11px;border-radius:6px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans';font-size:11px;font-weight:600;letter-spacing:.5px;cursor:pointer;transition:all .15s;white-space:nowrap;}
   .rtbtn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px var(--shadow);}
   .rtbtn.ktc-active{color:#3ecf8e;}
   .rtbtn.fc-active{color:#60a5fa;}
+  .rtbtn.fp-active{color:#f0b429;}
+  .rtbtn.sl-active{color:#a78bfa;}
+  .rtbtn.comp-active{color:#f87171;}
   .fc-loading{font-size:10px;color:var(--muted);letter-spacing:1px;animation:pulse 1.2s infinite;}
 
   /* Best pick highlight */
@@ -204,7 +207,10 @@
   <div class="spacer"></div>
   <div class="rank-toggle">
     <button class="rtbtn active ktc-active" id="btnKTC" onclick="switchRanking('ktc')">KTC</button>
-    <button class="rtbtn" id="btnFC" onclick="switchRanking('fc')">FantasyCalc</button>
+    <button class="rtbtn" id="btnFC"   onclick="switchRanking('fc')">FantasyCalc</button>
+    <button class="rtbtn" id="btnFP"   onclick="switchRanking('fp')">FantasyPros</button>
+    <button class="rtbtn" id="btnSL"   onclick="switchRanking('sl')">Sleeper ADP</button>
+    <button class="rtbtn" id="btnCOMP" onclick="switchRanking('comp')">⚡ Composite</button>
   </div>
   <div class="srch">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="color:var(--dim)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -283,6 +289,28 @@ const KTC_RAW = [
   ["Carson Beck",         "QB", 62,   98, 13, -15, "ARI"],
 ];
 const KTC_MAX = 7889;
+
+// ── FantasyPros ADP (Mai 2026) ────────────────────────────────────────────────
+const FP_RAW = [{"name": "Jeremiyah Love", "pos": "RB", "rank": 1, "adp": 1.0, "team": "ARI"}, {"name": "Carnell Tate", "pos": "WR", "rank": 2, "adp": 2.5, "team": "TEN"}, {"name": "Jordyn Tyson", "pos": "WR", "rank": 3, "adp": 3.7, "team": "NO"}, {"name": "Jadarian Price", "pos": "RB", "rank": 4, "adp": 4.3, "team": "SEA"}, {"name": "Makai Lemon", "pos": "WR", "rank": 5, "adp": 4.7, "team": "PHI"}, {"name": "KC Concepcion", "pos": "WR", "rank": 6, "adp": 6.3, "team": "CLE"}, {"name": "Kenyon Sadiq", "pos": "TE", "rank": 7, "adp": 8.0, "team": "NYJ"}, {"name": "Omar Cooper Jr.", "pos": "WR", "rank": 8, "adp": 8.2, "team": "NYJ"}, {"name": "Fernando Mendoza", "pos": "QB", "rank": 9, "adp": 8.7, "team": "LV"}, {"name": "Denzel Boston", "pos": "WR", "rank": 10, "adp": 9.5, "team": "CLE"}, {"name": "Jonah Coleman", "pos": "RB", "rank": 11, "adp": 10.3, "team": "DEN"}, {"name": "Eli Stowers", "pos": "TE", "rank": 12, "adp": 14.2, "team": "PHI"}, {"name": "Mike Washington Jr.", "pos": "RB", "rank": 13, "adp": 14.3, "team": "LV"}, {"name": "Emmett Johnson", "pos": "RB", "rank": 14, "adp": 15.2, "team": "KC"}, {"name": "Nick Singleton", "pos": "RB", "rank": 15, "adp": 16.5, "team": "TEN"}, {"name": "Germie Bernard", "pos": "WR", "rank": 16, "adp": 17.2, "team": "PIT"}, {"name": "Antonio Williams", "pos": "WR", "rank": 17, "adp": 17.3, "team": "WAS"}, {"name": "Chris Bell", "pos": "WR", "rank": 18, "adp": 18.5, "team": "MIA"}, {"name": "Kaytron Allen", "pos": "RB", "rank": 19, "adp": 20.2, "team": "WAS"}, {"name": "De'Zhaun Stribling", "pos": "WR", "rank": 20, "adp": 21.0, "team": "SF"}, {"name": "Zachariah Branch", "pos": "WR", "rank": 21, "adp": 21.3, "team": "ATL"}, {"name": "Elijah Sarratt", "pos": "WR", "rank": 22, "adp": 24.3, "team": "BAL"}, {"name": "Chris Brazzell II", "pos": "WR", "rank": 23, "adp": 24.3, "team": "CAR"}, {"name": "Demond Claiborne", "pos": "RB", "rank": 24, "adp": 26.3, "team": "MIN"}, {"name": "Malachi Fields", "pos": "WR", "rank": 25, "adp": 27.0, "team": "NYG"}, {"name": "Kaelon Black", "pos": "RB", "rank": 26, "adp": 27.8, "team": "SF"}, {"name": "Skyler Bell", "pos": "WR", "rank": 27, "adp": 27.8, "team": "BUF"}, {"name": "Ted Hurst", "pos": "WR", "rank": 28, "adp": 28.3, "team": "TB"}, {"name": "Ja'Kobi Lane", "pos": "WR", "rank": 29, "adp": 28.5, "team": "BAL"}, {"name": "Brenen Thompson", "pos": "WR", "rank": 30, "adp": 32.3, "team": "LAC"}, {"name": "Ty Simpson", "pos": "QB", "rank": 31, "adp": 27.2, "team": "LAR"}, {"name": "Adam Randall", "pos": "RB", "rank": 32, "adp": 34.2, "team": "BAL"}, {"name": "Oscar Delp", "pos": "TE", "rank": 33, "adp": 35.8, "team": "NO"}, {"name": "Bryce Lance", "pos": "WR", "rank": 34, "adp": 38.8, "team": "NO"}, {"name": "Carson Beck", "pos": "QB", "rank": 35, "adp": 33.4, "team": "ARI"}, {"name": "Max Klare", "pos": "TE", "rank": 36, "adp": 33.6, "team": "LAR"}, {"name": "Eli Heidenreich", "pos": "RB", "rank": 37, "adp": 39.5, "team": "PIT"}, {"name": "Caleb Douglas", "pos": "WR", "rank": 38, "adp": 37.6, "team": "MIA"}, {"name": "Justin Joly", "pos": "TE", "rank": 39, "adp": 33.8, "team": "DEN"}, {"name": "Michael Trigg", "pos": "TE", "rank": 40, "adp": 41.6, "team": "DAL"}, {"name": "Deion Burks", "pos": "WR", "rank": 41, "adp": 43.0, "team": "IND"}, {"name": "Seth McGowan", "pos": "RB", "rank": 42, "adp": 40.0, "team": "IND"}, {"name": "CJ Daniels", "pos": "WR", "rank": 43, "adp": 46.0, "team": "LAR"}, {"name": "Drew Allar", "pos": "QB", "rank": 44, "adp": 41.3, "team": "PIT"}, {"name": "Eli Raridon", "pos": "TE", "rank": 45, "adp": 41.5, "team": "NE"}, {"name": "Kevin Coleman", "pos": "WR", "rank": 46, "adp": 45.8, "team": "MIA"}, {"name": "Cade Klubnik", "pos": "QB", "rank": 47, "adp": 47.8, "team": "NYJ"}, {"name": "J'Mari Taylor", "pos": "RB", "rank": 48, "adp": 48.0, "team": "JAC"}, {"name": "Garrett Nussmeier", "pos": "QB", "rank": 49, "adp": 41.3, "team": "KC"}, {"name": "Le'Veon Moss", "pos": "RB", "rank": 50, "adp": 42.0, "team": "MIA"}, {"name": "Zavion Thomas", "pos": "WR", "rank": 51, "adp": 42.3, "team": "CHI"}, {"name": "Jam Miller", "pos": "RB", "rank": 52, "adp": 51.8, "team": "NE"}, {"name": "Reggie Virgil", "pos": "WR", "rank": 79, "adp": 72.0, "team": "ARI"}];
+
+// ── Sleeper ADP (Mai 2026) ────────────────────────────────────────────────────
+const SL_RAW = [{"name": "Jeremiyah Love", "rank": 1, "adp": 1, "marketIndex": 0}, {"name": "Carnell Tate", "rank": 2, "adp": 2, "marketIndex": -1}, {"name": "Jordyn Tyson", "rank": 3, "adp": 3, "marketIndex": 1}, {"name": "Makai Lemon", "rank": 4, "adp": 4, "marketIndex": 0}, {"name": "Jadarian Price", "rank": 5, "adp": 5, "marketIndex": 0}, {"name": "KC Concepcion", "rank": 6, "adp": 6, "marketIndex": 0}, {"name": "Omar Cooper Jr.", "rank": 7, "adp": 7, "marketIndex": -2}, {"name": "Kenyon Sadiq", "rank": 8, "adp": 8, "marketIndex": 1}, {"name": "Denzel Boston", "rank": 9, "adp": 9, "marketIndex": -2}, {"name": "Fernando Mendoza", "rank": 10, "adp": 10, "marketIndex": 2}, {"name": "Eli Stowers", "rank": 11, "adp": 11, "marketIndex": 1}, {"name": "Chris Bell", "rank": 12, "adp": 12, "marketIndex": -8}, {"name": "Germie Bernard", "rank": 13, "adp": 15, "marketIndex": 0}, {"name": "Jonah Coleman", "rank": 14, "adp": 16, "marketIndex": 0}, {"name": "Chris Brazzell II", "rank": 15, "adp": 17, "marketIndex": -10}, {"name": "Elijah Sarratt", "rank": 16, "adp": 18, "marketIndex": -14}, {"name": "Zachariah Branch", "rank": 17, "adp": 19, "marketIndex": -4}, {"name": "Emmett Johnson", "rank": 18, "adp": 20, "marketIndex": -1}, {"name": "Nicholas Singleton", "rank": 19, "adp": 21, "marketIndex": 2}, {"name": "Ty Simpson", "rank": 20, "adp": 22, "marketIndex": -2}, {"name": "Antonio Williams", "rank": 21, "adp": 23, "marketIndex": 9}, {"name": "Malachi Fields", "rank": 22, "adp": 24, "marketIndex": -14}, {"name": "De'Zhaun Stribling", "rank": 23, "adp": 25, "marketIndex": 8}, {"name": "Ted Hurst", "rank": 24, "adp": 26, "marketIndex": 0}, {"name": "Ja'Kobi Lane", "rank": 25, "adp": 29, "marketIndex": -1}, {"name": "Skyler Bell", "rank": 26, "adp": 30, "marketIndex": -3}, {"name": "Mike Washington Jr.", "rank": 27, "adp": 31, "marketIndex": 9}, {"name": "Brenen Thompson", "rank": 28, "adp": 32, "marketIndex": -4}, {"name": "Max Klare", "rank": 29, "adp": 33, "marketIndex": -6}, {"name": "Adam Randall", "rank": 30, "adp": 34, "marketIndex": 2}, {"name": "CJ Daniels", "rank": 31, "adp": 35, "marketIndex": -25}, {"name": "Michael Trigg", "rank": 32, "adp": 36, "marketIndex": -38}, {"name": "Kevin Coleman", "rank": 33, "adp": 37, "marketIndex": -13}, {"name": "Kaytron Allen", "rank": 34, "adp": 38, "marketIndex": 18}, {"name": "Le'Veon Moss", "rank": 35, "adp": 39, "marketIndex": -25}, {"name": "Oscar Delp", "rank": 36, "adp": 40, "marketIndex": 2}, {"name": "Demond Claiborne", "rank": 38, "adp": 44, "marketIndex": 5}, {"name": "J'Mari Taylor", "rank": 39, "adp": 45, "marketIndex": -30}, {"name": "Deion Burks", "rank": 40, "adp": 46, "marketIndex": -14}, {"name": "Carson Beck", "rank": 41, "adp": 47, "marketIndex": -43}, {"name": "Kaelon Black", "rank": 42, "adp": 48, "marketIndex": 15}, {"name": "Eli Heidenreich", "rank": 43, "adp": 49, "marketIndex": -5}, {"name": "Justin Joly", "rank": 53, "adp": 61, "marketIndex": 15}, {"name": "Garrett Nussmeier", "rank": 52, "adp": 60, "marketIndex": -37}, {"name": "Cade Klubnik", "rank": 60, "adp": 68, "marketIndex": -23}, {"name": "Drew Allar", "rank": 55, "adp": 63, "marketIndex": -24}, {"name": "Caleb Douglas", "rank": 72, "adp": 82, "marketIndex": 41}, {"name": "Bryce Lance", "rank": 46, "adp": 52, "marketIndex": 23}, {"name": "Reggie Virgil", "rank": 79, "adp": 79, "marketIndex": 0}];
+
+// Build FP/SL lookup maps
+const fpMap={}, slMap={};
+FP_RAW.forEach(p=>{ fpMap[norm(p.name)]={...p}; });
+SL_RAW.forEach(p=>{ slMap[norm(p.name)]={...p}; });
+
+function findFpSl(name, map){
+  const n=norm(name);
+  if(map[n]) return map[n];
+  let best=null,bs=0;
+  Object.values(map).forEach(p=>{
+    const s=nameSim(name,p.name);
+    if(s>bs&&s>=0.85){bs=s;best=p;}
+  });
+  return best;
+}
 
 const ktcMap = {};
 KTC_RAW.forEach(([name,pos,rank,value,tier,trend,nflTeam])=>{
@@ -380,12 +408,51 @@ let fcLoading=false;
 const LEAGUE_ID="1312799736218017792";
 const LEAGUE_SIZE=14; // ← 14 Teams
 
-// ── Active ranking helpers (abstracted over KTC/FC) ──────────────────────────
-function getActiveRank(row)  { return rankingMode==="fc" ? row.fcRank  : row.ktcRank;  }
-function getActiveValue(row) { return rankingMode==="fc" ? row.fcValue : row.ktcValue; }
-function getActiveTier(row)  { return rankingMode==="fc" ? row.fcTier  : row.ktcTier;  }
-function getActiveTrend(row) { return row.ktcTrend; } // FC has no trend, always use KTC
-function getActiveMax()      { return rankingMode==="fc" ? FC_MAX : KTC_MAX; }
+// ── Active ranking helpers (abstracted over KTC/FC/FP/SL/COMP) ───────────────
+function getActiveRank(row){
+  if(rankingMode==='ktc')  return row.ktcRank;
+  if(rankingMode==='fc')   return row.fcRank;
+  if(rankingMode==='fp')   return row.fpRank;
+  if(rankingMode==='sl')   return row.slRank;
+  if(rankingMode==='comp') return row.compRank;
+  return row.ktcRank;
+}
+function getActiveValue(row){
+  if(rankingMode==='ktc')  return row.ktcValue;
+  if(rankingMode==='fc')   return row.fcValue;
+  if(rankingMode==='fp')   return row.fpAdp   != null ? Math.round(1000/row.fpAdp*10) : null;
+  if(rankingMode==='sl')   return row.slAdp   != null ? Math.round(1000/row.slAdp*10) : null;
+  if(rankingMode==='comp') return row.compScore!= null ? Math.round(row.compScore*100) : null;
+  return row.ktcValue;
+}
+function getActiveTier(row){ return rankingMode==='ktc' ? row.ktcTier : null; }
+function getActiveTrend(row){ return row.ktcTrend; }
+function getActiveMax(){
+  if(rankingMode==='ktc')  return KTC_MAX;
+  if(rankingMode==='fc')   return FC_MAX;
+  if(rankingMode==='fp'||rankingMode==='sl') return 1000; // rank 1 → value 1000
+  if(rankingMode==='comp') return 100; // compScore 0-1 → *100
+  return KTC_MAX;
+}
+function getActiveLabel(){ return {ktc:'KTC',fc:'FantasyCalc',fp:'FantasyPros',sl:'Sleeper ADP',comp:'Composite'}[rankingMode]||'KTC'; }
+
+// ── Composite rank (average of available ranks, lower=better) ─────────────────
+function buildComposite(){
+  allRows.forEach(r=>{
+    const ranks=[];
+    if(r.ktcRank)  ranks.push(r.ktcRank);
+    if(r.fcRank)   ranks.push(r.fcRank);
+    if(r.fpRank)   ranks.push(r.fpRank);
+    if(r.slRank)   ranks.push(r.slRank);
+    if(!ranks.length){ r.compRank=null; r.compScore=null; return; }
+    const avg=ranks.reduce((s,v)=>s+v,0)/ranks.length;
+    r.compRank=Math.round(avg);
+    // Score = inverse of avg rank (higher=better), normalized to ~0-1 for value bar
+    r.compScore=Math.max(0, 1-(avg-1)/80);
+    // Disagreement: max spread across sources
+    r.compSpread=ranks.length>1 ? Math.max(...ranks)-Math.min(...ranks) : 0;
+  });
+}
 
 // ── FantasyCalc ───────────────────────────────────────────────────────────────
 let FC_MAX=10000;
@@ -429,8 +496,9 @@ async function loadFC(){
       const fc=findFc(r.fullName);
       r.fcRank=fc?.rank||null;
       r.fcValue=fc?.value||null;
-      r.fcTier=null; // FC has no tiers
+      r.fcTier=null;
     });
+    buildComposite();
     document.getElementById("btnFC").textContent="FantasyCalc";
     fcLoading=false;
     renderView();
@@ -442,18 +510,28 @@ async function loadFC(){
 }
 
 // ── Ranking toggle ────────────────────────────────────────────────────────────
+const SOURCES={
+  ktc:  {label:'KTC',   cls:'ktc-active',  note:'KTC: 1QB / 0.5 PPR · Stand Mai 2026 · <a href="https://keeptradecut.com/dynasty-rankings/rookie-rankings" target="_blank">keeptradecut.com ↗</a>'},
+  fc:   {label:'FC',    cls:'fc-active',   note:'FantasyCalc: 1QB / 0.5 PPR · 14 Teams · Live · <a href="https://fantasycalc.com/rankings" target="_blank">fantasycalc.com ↗</a>'},
+  fp:   {label:'FP',    cls:'fp-active',   note:'FantasyPros ADP: Dynasty Rookie Rankings · Stand Mai 2026 · <a href="https://www.fantasypros.com" target="_blank">fantasypros.com ↗</a>'},
+  sl:   {label:'SL',    cls:'sl-active',   note:'Sleeper ADP: Dynasty 1PPR Rookie · Stand Mai 2026 · <a href="https://sleeper.com" target="_blank">sleeper.com ↗</a>'},
+  comp: {label:'COMP',  cls:'comp-active', note:'⚡ Composite: Durchschnitt aller verfügbaren Rankings (KTC · FantasyCalc · FantasyPros · Sleeper). Spread = max. Meinungsverschiedenheit zwischen Quellen.'},
+};
+
 function switchRanking(mode){
   rankingMode=mode;
-  document.getElementById("btnKTC").className="rtbtn"+(mode==="ktc"?" active ktc-active":"");
-  document.getElementById("btnFC").className ="rtbtn"+(mode==="fc" ?" active fc-active":"");
-  const note=document.getElementById("sourceNote");
-  if(mode==="ktc"){
-    note.innerHTML='KTC: 1QB / 0.5 PPR · Stand Mai 2026 · <a href="https://keeptradecut.com/dynasty-rankings/rookie-rankings" target="_blank">keeptradecut.com ↗</a>';
-    renderView();
-  } else {
-    note.innerHTML='FantasyCalc: 1QB / 0.5 PPR · 14 Teams · Live · <a href="https://fantasycalc.com/rankings" target="_blank">fantasycalc.com ↗</a>';
-    if(!fcData&&!fcLoading) loadFC(); else if(fcData) renderView();
-  }
+  // Update button styles
+  ['ktc','fc','fp','sl','comp'].forEach(m=>{
+    const btn=document.getElementById('btn'+m.toUpperCase());
+    if(!btn) return;
+    btn.className='rtbtn'+(mode===m?' active '+SOURCES[m].cls:'');
+  });
+  document.getElementById('sourceNote').innerHTML=SOURCES[mode].note;
+
+  if(mode==='fc'&&!fcData&&!fcLoading){ loadFC(); return; }
+  if(mode==='comp'&&!fcData&&!fcLoading){ loadFC().then(()=>{buildComposite();renderView();}); return; }
+  if(mode==='comp') buildComposite();
+  renderView();
 }
 
 // ── Sleeper ───────────────────────────────────────────────────────────────────
@@ -487,12 +565,17 @@ async function loadDraft(){
     const drafter=userMap[userId]||`Team ${pick.roster_id}`;
     const position=m.position||"?";
     const ktc=findKtc(fullName);
+    const fp=findFpSl(fullName,fpMap);
+    const sl=findFpSl(fullName,slMap);
     return{fullName,pickNum,round:pick.round,drafter,position,
       rosterId:pick.roster_id,
-      ktcRank:ktc?.rank||null,ktcValue:ktc?.value||null,
-      ktcTier:ktc?.tier||null,ktcTrend:ktc?.trend||null,
+      ktcRank:ktc?.rank||null,  ktcValue:ktc?.value||null,
+      ktcTier:ktc?.tier||null,  ktcTrend:ktc?.trend||null,
       ktcTeam:ktc?.nflTeam||m.team||"",
-      fcRank:null,fcValue:null,fcTier:null};
+      fcRank:null, fcValue:null, fcTier:null,
+      fpRank:fp?.rank||null,   fpAdp:fp?.adp||null,
+      slRank:sl?.rank||null,   slAdp:sl?.adp||null, slMarketIndex:sl?.marketIndex||null,
+      compRank:null, compScore:null, compSpread:null};
   });
 
   // ── Trade analysis ────────────────────────────────────────────────────────
@@ -513,6 +596,7 @@ async function loadDraft(){
   }
 
   setBadge("done",`${allRows.length} Picks · ${LEAGUE_SIZE} Teams`);
+  buildComposite();
   renderView();
 }
 
@@ -567,7 +651,12 @@ function renderPicks(){
               const aTier=getActiveTier(r);
               const aMax=getActiveMax();
               const st=stealInfo(r.pickNum,aRank);
-              const src=rankingMode==="fc"?"FC":"KTC";
+              // Extra info per mode
+              const extraCol = rankingMode==='comp'&&r.compSpread!=null
+                ? `<span style="font-size:11px;color:${r.compSpread>=10?'var(--red)':r.compSpread>=5?'var(--accent)':'var(--muted)'}">±${r.compSpread}</span>`
+                : rankingMode==='sl'&&r.slMarketIndex!=null
+                ? `<span style="${r.slMarketIndex>0?'color:var(--green)':r.slMarketIndex<0?'color:var(--red)':'color:var(--muted)'};font-size:11px;font-weight:600">${r.slMarketIndex>0?'▲'+r.slMarketIndex:r.slMarketIndex<0?'▼'+Math.abs(r.slMarketIndex):'0'}</span>`
+                : '';
               return`<tr style="animation-delay:${i*.024}s">
                 <td><div class="pick-num">${r.pickNum}</div><div class="pick-round">R${r.round}</div></td>
                 <td style="font-weight:600;min-width:148px">${r.fullName}</td>
@@ -575,9 +664,9 @@ function renderPicks(){
                 <td style="font-size:11px;color:var(--muted)">${r.ktcTeam||"—"}</td>
                 <td style="font-size:12px;color:var(--muted);min-width:110px">${r.drafter}</td>
                 <td><span class="rank-big ${rankCls(aRank)}">${aRank?"#"+aRank:"—"}</span></td>
-                <td>${aTier?`<span class="tier-badge ${tierCls(aTier)}">T${aTier}</span>`:`<span style="color:var(--dim);font-size:11px">${rankingMode==="fc"?"n/a":"—"}</span>`}</td>
-                <td>${trendHtml(r.ktcTrend)}${rankingMode==="fc"?`<span style="font-size:9px;color:var(--dim);margin-left:3px">(KTC)</span>`:""}</td>
-                <td style="min-width:118px">${aVal!=null?`<div class="vbar-wrap"><span class="vbar-num">${aVal.toLocaleString()}</span><div class="vbar-bg"><div class="vbar-fill" style="width:${Math.round(aVal/aMax*100)}%"></div></div></div>`:`<span style="color:var(--dim);font-size:12px">—</span>`}</td>
+                <td>${aTier?`<span class="tier-badge ${tierCls(aTier)}">T${aTier}</span>`:extraCol||`<span style="color:var(--dim);font-size:11px">${rankingMode==='ktc'?'—':'n/a'}</span>`}</td>
+                <td>${trendHtml(r.ktcTrend)}${rankingMode!=='ktc'?`<span style="font-size:9px;color:var(--dim);margin-left:3px">(KTC)</span>`:""}</td>
+                <td style="min-width:118px">${aVal!=null?`<div class="vbar-wrap"><span class="vbar-num">${rankingMode==='fp'||rankingMode==='sl'?'ADP '+(aRank||'—'):aVal.toLocaleString()}</span><div class="vbar-bg"><div class="vbar-fill" style="width:${Math.min(100,Math.round(aVal/aMax*100))}%"></div></div></div>`:`<span style="color:var(--dim);font-size:12px">—</span>`}</td>
                 <td>${st?`<span class="steal-badge ${st.cls}">${st.label}</span>`:`<span style="color:var(--dim);font-size:12px">—</span>`}</td>
               </tr>`;}).join("")}
         </tbody>

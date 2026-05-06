@@ -441,10 +441,10 @@ function getActiveRank(row){
   return row.ktcRank;
 }
 function getActiveValue(row){
-  if(rankingMode==='fp')   return row.fpAdp   != null ? Math.round(10000/row.fpAdp) : null;
-  if(rankingMode==='sl')   return row.slAdp   != null ? Math.round(10000/row.slAdp) : null;
-  if(rankingMode==='comp') return row.compScore!= null ? Math.round(row.compScore*10000) : null;
-  return row.ktcValue;
+  if(rankingMode==='fp')   return (row.fpAdp  &&row.fpAdp>0)  ? Math.round(10000/row.fpAdp)  : null;
+  if(rankingMode==='sl')   return (row.slAdp  &&row.slAdp>0)  ? Math.round(10000/row.slAdp)  : null;
+  if(rankingMode==='comp') return (row.compScore!=null)        ? Math.round(row.compScore*10000) : null;
+  return row.ktcValue??null;
 }
 function getActiveTier(row){ return rankingMode==='ktc' ? row.ktcTier : null; }
 function getActiveMax(){
@@ -515,21 +515,23 @@ async function loadDraft(){
   allRows=picks.map(pick=>{
     const m=pick.metadata||{};
     const fullName=(m.first_name&&m.last_name)?`${m.first_name} ${m.last_name}`:(m.name||pick.player_id||"?");
-    // Fix: use LEAGUE_SIZE for correct pick number calculation
-    const pickNum=pick.pick_no||((pick.round-1)*LEAGUE_SIZE+pick.draft_slot);
     const userId=rosterUser[pick.roster_id]||pick.picked_by;
     const drafter=userMap[userId]||`Team ${pick.roster_id}`;
     const position=m.position||"?";
     const ktc=findKtc(fullName);
     const fp=findFpSl(fullName,fpMap);
     const sl=findFpSl(fullName,slMap);
-    return{fullName,pickNum,round:pick.round,drafter,position,
+    // Safe pickNum: pick_no is most reliable, fallback uses actual league size
+    const pickNum = pick.pick_no
+      ? parseInt(pick.pick_no)
+      : ((parseInt(pick.round)||1)-1)*LEAGUE_SIZE + (parseInt(pick.draft_slot)||1);
+    return{fullName,pickNum,round:parseInt(pick.round)||1,drafter,position,
       rosterId:pick.roster_id,
       ktcRank:ktc?.rank||null, ktcValue:ktc?.value||null,
-      ktcTier:ktc?.tier||null, ktcTrend:ktc?.trend||null,
+      ktcTier:ktc?.tier||null, ktcTrend:ktc?.trend??null,
       ktcTeam:ktc?.nflTeam||m.team||"",
       fpRank:fp?.rank||null,   fpAdp:fp?.adp||null,
-      slRank:sl?.rank||null,   slAdp:sl?.adp||null, slMarketIndex:sl?.marketIndex||null,
+      slRank:sl?.rank||null,   slAdp:sl?.adp||null, slMarketIndex:sl?.marketIndex??null,
       compRank:null, compScore:null, compSpread:null, compSources:0};
   });
 
@@ -557,9 +559,15 @@ async function loadDraft(){
 
 // ── Render router ────────────────────────────────────────────────────────────
 function renderView(){
-  if(curTab==="picks") renderPicks();
-  else if(curTab==="teams") renderTeams();
-  else renderLiga();
+  try{
+    if(curTab==="picks") renderPicks();
+    else if(curTab==="teams") renderTeams();
+    else renderLiga();
+  } catch(e){
+    console.error("renderView error:",e);
+    document.getElementById("main").innerHTML=
+      `<div class="err-box"><strong>Render-Fehler:</strong> ${e.message}<br><pre style="font-size:10px;margin-top:8px;opacity:.6">${e.stack?.slice(0,300)}</pre></div>`;
+  }
 }
 
 const tierCls=t=>["","t1","t2","t3","t4","t5"][Math.min(t||5,5)]||"t5";

@@ -135,6 +135,14 @@
   .liga-card-sub{font-size:11px;color:var(--muted);}
   .liga-divider{height:1px;background:var(--border);margin:20px 40px 0;}
 
+  /* Ranking toggle */
+  .rank-toggle{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px;}
+  .rtbtn{padding:4px 12px;border-radius:6px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans';font-size:11px;font-weight:600;letter-spacing:.5px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+  .rtbtn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px var(--shadow);}
+  .rtbtn.ktc-active{color:#3ecf8e;}
+  .rtbtn.fc-active{color:#60a5fa;}
+  .fc-loading{font-size:10px;color:var(--muted);letter-spacing:1px;animation:pulse 1.2s infinite;}
+
   /* Best pick highlight */
   .tp-row.best-pick{background:rgba(62,207,142,0.06);border-radius:6px;padding-left:6px;padding-right:6px;margin:0 -6px;}
   [data-theme="light"] .tp-row.best-pick{background:rgba(31,168,112,0.07);}
@@ -194,13 +202,17 @@
   <button class="fbtn" data-pos="WR">WR</button>
   <button class="fbtn" data-pos="TE">TE</button>
   <div class="spacer"></div>
+  <div class="rank-toggle">
+    <button class="rtbtn active ktc-active" id="btnKTC" onclick="switchRanking('ktc')">KTC</button>
+    <button class="rtbtn" id="btnFC" onclick="switchRanking('fc')">FantasyCalc</button>
+  </div>
   <div class="srch">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="color:var(--dim)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <input id="searchInput" type="text" placeholder="Spieler / Team…">
   </div>
 </div>
 
-<div class="ktc-note">
+<div class="ktc-note" id="sourceNote">
   KTC: 1QB / 0.5 PPR · Stand Mai 2026 ·
   <a href="https://keeptradecut.com/dynasty-rankings/rookie-rankings" target="_blank">keeptradecut.com ↗</a>
 </div>
@@ -303,9 +315,9 @@ function findKtc(name){
 }
 
 // ── Steal ─────────────────────────────────────────────────────────────────────
-function stealInfo(pickNum,ktcRank){
-  if(!ktcRank) return null;
-  const d=pickNum-ktcRank;
+function stealInfo(pickNum, rank){
+  if(!rank) return null;
+  const d=pickNum-rank;
   if(d>=8)  return{label:"🔥 Großer Steal",cls:"steal-great",d};
   if(d>=4)  return{label:"✅ Steal",cls:"steal-good",d};
   if(d>=-3) return{label:"≈ Fair Value",cls:"steal-fair",d};
@@ -314,41 +326,38 @@ function stealInfo(pickNum,ktcRank){
 }
 
 // ── Grade (Steal-Delta + Rundenbonus + Trade-Malus/Bonus) ─────────────────────
-// Round multiplier: R1 steals count most, R4 still counts but less
 const ROUND_MULT={1:2.0, 2:1.3, 3:1.0, 4:0.5};
 
 function weightedDelta(pick){
-  if(!pick.ktcRank||pick.round>4) return null;
-  const raw=pick.pickNum-pick.ktcRank; // positive=steal, negative=reach
-  return raw*(ROUND_MULT[pick.round]||0.5);
+  const rank=getActiveRank(pick);
+  if(!rank||pick.round>4) return null;
+  return (pick.pickNum-rank)*(ROUND_MULT[pick.round]||0.5);
 }
 
 function calcGrade(picks, tradeBalance=0){
-  // R1–R4 with KTC match (R4 with half weight)
-  const valid=picks.filter(p=>p.ktcRank&&p.round<=4);
+  const valid=picks.filter(p=>getActiveRank(p)&&p.round<=4);
   if(!valid.length) return{grade:"—",cls:"",score:null,avgTier:null,avgTrend:null,wDelta:null,tradeBalance,note:"Keine bewertbaren Picks."};
 
   const deltas=valid.map(p=>weightedDelta(p)).filter(d=>d!==null);
   const wDelta=deltas.length ? deltas.reduce((s,d)=>s+d,0)/deltas.length : 0;
 
-  const avgTier =(valid.reduce((s,p)=>s+(p.ktcTier||5),0)/valid.length).toFixed(1);
+  const avgTier =(valid.reduce((s,p)=>s+(getActiveTier(p)||5),0)/valid.length).toFixed(1);
   const avgTrend=(valid.reduce((s,p)=>s+(p.ktcTrend||0),0)/valid.length).toFixed(1);
-  const avgVal  =Math.round(valid.reduce((s,p)=>s+(p.ktcValue||0),0)/valid.length);
+  const avgVal  =Math.round(valid.reduce((s,p)=>s+(getActiveValue(p)||0),0)/valid.length);
 
-  // Trade adjustment: 1000 KTC value ≈ 0.5 score points
-  const tradeAdj = tradeBalance / 2000;
-  const score = wDelta + tradeAdj;
+  const tradeAdj=tradeBalance/2000;
+  const score=wDelta+tradeAdj;
 
   let grade,cls,note;
   if(score>=12)     {grade="A+";cls="gA";note="Herausragendes Draft — exzellentes Steal-Timing und clevere Trades.";}
-  else if(score>=7) {grade="A"; cls="gA";note="Starkes Draft. Viele Picks später gegangen als ihr KTC-Rang.";}
+  else if(score>=7) {grade="A"; cls="gA";note="Starkes Draft. Viele Picks später gegangen als ihr Ranking.";}
   else if(score>=3) {grade="B+";cls="gB";note="Gutes Draft mit positivem Steal-Saldo.";}
   else if(score>=0) {grade="B"; cls="gB";note="Solides Draft — ungefähr Fair Value insgesamt.";}
   else if(score>=-4){grade="C"; cls="gC";note="Durchwachsenes Draft — leicht zu viel bezahlt.";}
   else              {grade="D"; cls="gD";note="Teures Draft — mehrere Reaches über Rundenbonus gewichtet.";}
 
-  const steals=valid.filter(p=>(p.pickNum-p.ktcRank)>=4);
-  const reaches=valid.filter(p=>(p.pickNum-p.ktcRank)<=-5);
+  const steals=valid.filter(p=>(p.pickNum-(getActiveRank(p)||0))>=4);
+  const reaches=valid.filter(p=>(p.pickNum-(getActiveRank(p)||0))<=-5);
   if(steals.length>=2) note+=` ${steals.length}× Steal-Pick! 🎯`;
   if(reaches.length>=2) note+=` ${reaches.length}× teurer Reach.`;
   if(tradeBalance>=2000) note+=" Trades haben sich ausgezahlt 🔄✅";
@@ -361,11 +370,91 @@ function calcGrade(picks, tradeBalance=0){
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let allRows=[];
-let tradeBalances={}; // drafter → net KTC value gained via trades
+let tradeBalances={};
 let curTab="picks";
 let posFilter="ALL";
 let sortCol="pick",sortDir=1;
+let rankingMode="ktc"; // "ktc" | "fc"
+let fcData=null;       // FantasyCalc data once loaded
+let fcLoading=false;
 const LEAGUE_ID="1312799736218017792";
+const LEAGUE_SIZE=14; // ← 14 Teams
+
+// ── Active ranking helpers (abstracted over KTC/FC) ──────────────────────────
+function getActiveRank(row)  { return rankingMode==="fc" ? row.fcRank  : row.ktcRank;  }
+function getActiveValue(row) { return rankingMode==="fc" ? row.fcValue : row.ktcValue; }
+function getActiveTier(row)  { return rankingMode==="fc" ? row.fcTier  : row.ktcTier;  }
+function getActiveTrend(row) { return row.ktcTrend; } // FC has no trend, always use KTC
+function getActiveMax()      { return rankingMode==="fc" ? FC_MAX : KTC_MAX; }
+
+// ── FantasyCalc ───────────────────────────────────────────────────────────────
+let FC_MAX=10000;
+const fcMap={};
+
+function buildFcMap(data){
+  FC_MAX=0;
+  data.forEach(item=>{
+    const p=item.player||item;
+    const name=p.name||p.playerName||"";
+    const n=norm(name);
+    const val=item.value||item.overallValue||0;
+    if(val>FC_MAX) FC_MAX=val;
+    if(n) fcMap[n]={name,pos:p.position||p.pos||"?",rank:item.overallRank||item.rank||null,value:val,nflTeam:p.maybeTeam||p.team||""};
+  });
+}
+
+function findFc(name){
+  const n=norm(name);
+  if(fcMap[n]) return fcMap[n];
+  let best=null,bs=0;
+  Object.values(fcMap).forEach(p=>{
+    const s=nameSim(name,p.name);
+    if(s>bs&&s>=0.85){bs=s;best=p;}
+  });
+  return best;
+}
+
+async function loadFC(){
+  if(fcData||fcLoading) return;
+  fcLoading=true;
+  document.getElementById("btnFC").innerHTML='<span class="fc-loading">laden…</span>';
+  try{
+    // FantasyCalc public API — dynasty, 1QB, 0.5PPR, 14 teams
+    const res=await fetch(`https://api.fantasycalc.com/values/current?isDynasty=true&numQbs=1&numTeams=${LEAGUE_SIZE}&ppr=0.5`);
+    if(!res.ok) throw new Error("FC "+res.status);
+    fcData=await res.json();
+    buildFcMap(Array.isArray(fcData)?fcData:fcData.players||[]);
+    // Enrich allRows with FC data
+    allRows.forEach(r=>{
+      const fc=findFc(r.fullName);
+      r.fcRank=fc?.rank||null;
+      r.fcValue=fc?.value||null;
+      r.fcTier=null; // FC has no tiers
+    });
+    document.getElementById("btnFC").textContent="FantasyCalc";
+    fcLoading=false;
+    renderView();
+  } catch(e){
+    console.warn("FantasyCalc failed:",e);
+    document.getElementById("btnFC").textContent="FC (N/A)";
+    fcLoading=false;
+  }
+}
+
+// ── Ranking toggle ────────────────────────────────────────────────────────────
+function switchRanking(mode){
+  rankingMode=mode;
+  document.getElementById("btnKTC").className="rtbtn"+(mode==="ktc"?" active ktc-active":"");
+  document.getElementById("btnFC").className ="rtbtn"+(mode==="fc" ?" active fc-active":"");
+  const note=document.getElementById("sourceNote");
+  if(mode==="ktc"){
+    note.innerHTML='KTC: 1QB / 0.5 PPR · Stand Mai 2026 · <a href="https://keeptradecut.com/dynasty-rankings/rookie-rankings" target="_blank">keeptradecut.com ↗</a>';
+    renderView();
+  } else {
+    note.innerHTML='FantasyCalc: 1QB / 0.5 PPR · 14 Teams · Live · <a href="https://fantasycalc.com/rankings" target="_blank">fantasycalc.com ↗</a>';
+    if(!fcData&&!fcLoading) loadFC(); else if(fcData) renderView();
+  }
+}
 
 // ── Sleeper ───────────────────────────────────────────────────────────────────
 async function loadDraft(){
@@ -379,7 +468,6 @@ async function loadDraft(){
     fetch(`https://api.sleeper.app/v1/draft/${draft.draft_id}/picks`).then(r=>r.json()),
     fetch(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/users`).then(r=>r.json()),
     fetch(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/rosters`).then(r=>r.json()),
-    // Transactions for the draft period (nflweek 0 = pre-season/draft)
     fetch(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/transactions/0`).then(r=>r.json()).catch(()=>[]),
   ]);
 
@@ -390,12 +478,11 @@ async function loadDraft(){
   const rosterName={};
   rosters.forEach(r=>{rosterName[r.roster_id]=userMap[r.owner_id]||`Team ${r.roster_id}`;});
 
-  // Build pick→KTC value lookup by pick_no (slot position in draft)
-  // We'll resolve after allRows is built
   allRows=picks.map(pick=>{
     const m=pick.metadata||{};
     const fullName=(m.first_name&&m.last_name)?`${m.first_name} ${m.last_name}`:(m.name||pick.player_id||"?");
-    const pickNum=pick.pick_no||((pick.round-1)*12+pick.draft_slot);
+    // Fix: use LEAGUE_SIZE for correct pick number calculation
+    const pickNum=pick.pick_no||((pick.round-1)*LEAGUE_SIZE+pick.draft_slot);
     const userId=rosterUser[pick.roster_id]||pick.picked_by;
     const drafter=userMap[userId]||`Team ${pick.roster_id}`;
     const position=m.position||"?";
@@ -404,20 +491,17 @@ async function loadDraft(){
       rosterId:pick.roster_id,
       ktcRank:ktc?.rank||null,ktcValue:ktc?.value||null,
       ktcTier:ktc?.tier||null,ktcTrend:ktc?.trend||null,
-      ktcTeam:ktc?.nflTeam||m.team||""};
+      ktcTeam:ktc?.nflTeam||m.team||"",
+      fcRank:null,fcValue:null,fcTier:null};
   });
 
   // ── Trade analysis ────────────────────────────────────────────────────────
-  // Filter only draft-pick trades (type==="trade" with draft_picks moved)
   tradeBalances={};
   rosters.forEach(r=>{tradeBalances[rosterName[r.roster_id]]=0;});
 
   if(Array.isArray(transactions)){
     transactions.filter(t=>t.type==="trade"&&t.draft_picks?.length).forEach(trade=>{
-      // Each traded pick has: round, roster_id (original owner), owner_id (new owner)
-      // We estimate KTC value of the pick slot based on round
-      // Pick value estimate by round (average KTC values from our data)
-    const roundVal={1:4500,2:2200,3:900,4:150};
+      const roundVal={1:4500,2:2200,3:900,4:150};
       trade.draft_picks.forEach(dp=>{
         const fromTeam=rosterName[dp.previous_owner_id]||rosterName[dp.roster_id];
         const toTeam  =rosterName[dp.owner_id];
@@ -428,7 +512,7 @@ async function loadDraft(){
     });
   }
 
-  setBadge("done",`${allRows.length} Picks · Trades analysiert`);
+  setBadge("done",`${allRows.length} Picks · ${LEAGUE_SIZE} Teams`);
   renderView();
 }
 
@@ -478,17 +562,22 @@ function renderPicks(){
           ${!rows.length
             ?`<tr><td colspan="10" style="text-align:center;color:var(--dim);padding:60px 0;font-size:13px">Keine Spieler gefunden</td></tr>`
             :rows.map((r,i)=>{
-              const st=stealInfo(r.pickNum,r.ktcRank);
+              const aRank=getActiveRank(r);
+              const aVal=getActiveValue(r);
+              const aTier=getActiveTier(r);
+              const aMax=getActiveMax();
+              const st=stealInfo(r.pickNum,aRank);
+              const src=rankingMode==="fc"?"FC":"KTC";
               return`<tr style="animation-delay:${i*.024}s">
                 <td><div class="pick-num">${r.pickNum}</div><div class="pick-round">R${r.round}</div></td>
                 <td style="font-weight:600;min-width:148px">${r.fullName}</td>
                 <td><span class="pos-badge ${r.position}">${r.position}</span></td>
                 <td style="font-size:11px;color:var(--muted)">${r.ktcTeam||"—"}</td>
                 <td style="font-size:12px;color:var(--muted);min-width:110px">${r.drafter}</td>
-                <td><span class="rank-big ${rankCls(r.ktcRank)}">${r.ktcRank?"#"+r.ktcRank:"—"}</span></td>
-                <td>${r.ktcTier?`<span class="tier-badge ${tierCls(r.ktcTier)}">T${r.ktcTier}</span>`:`<span style="color:var(--dim)">—</span>`}</td>
-                <td>${trendHtml(r.ktcTrend)}</td>
-                <td style="min-width:118px">${r.ktcValue!=null?`<div class="vbar-wrap"><span class="vbar-num">${r.ktcValue.toLocaleString()}</span><div class="vbar-bg"><div class="vbar-fill" style="width:${Math.round(r.ktcValue/KTC_MAX*100)}%"></div></div></div>`:`<span style="color:var(--dim);font-size:12px">—</span>`}</td>
+                <td><span class="rank-big ${rankCls(aRank)}">${aRank?"#"+aRank:"—"}</span></td>
+                <td>${aTier?`<span class="tier-badge ${tierCls(aTier)}">T${aTier}</span>`:`<span style="color:var(--dim);font-size:11px">${rankingMode==="fc"?"n/a":"—"}</span>`}</td>
+                <td>${trendHtml(r.ktcTrend)}${rankingMode==="fc"?`<span style="font-size:9px;color:var(--dim);margin-left:3px">(KTC)</span>`:""}</td>
+                <td style="min-width:118px">${aVal!=null?`<div class="vbar-wrap"><span class="vbar-num">${aVal.toLocaleString()}</span><div class="vbar-bg"><div class="vbar-fill" style="width:${Math.round(aVal/aMax*100)}%"></div></div></div>`:`<span style="color:var(--dim);font-size:12px">—</span>`}</td>
                 <td>${st?`<span class="steal-badge ${st.cls}">${st.label}</span>`:`<span style="color:var(--dim);font-size:12px">—</span>`}</td>
               </tr>`;}).join("")}
         </tbody>
@@ -523,7 +612,7 @@ function renderTeams(){
         const tb=tradeBalances[name]||0;
         const g=calcGrade(picks,tb);
         const sorted=[...picks].sort((a,b)=>a.pickNum-b.pickNum);
-        const valid=picks.filter(p=>p.ktcRank&&p.round<=4);
+        const valid=picks.filter(p=>getActiveRank(p)&&p.round<=4);
         const trendNum=parseFloat(g.avgTrend||0);
         const wD=parseFloat(g.wDelta||0);
 

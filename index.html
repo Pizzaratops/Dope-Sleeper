@@ -1,121 +1,148 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rookie Draft Board 2026</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0c10; --surface: #12151c; --surface2: #1a1f2a;
-    --border: #1e2330; --accent: #f0b429; --accent2: #e05c2a;
-    --text: #e8ecf4; --muted: #6b7589; --green: #3ecf8e;
-    --red: #f87171; --purple: #a78bfa;
+  :root[data-theme="dark"] {
+    --bg:#0a0c10; --surface:#12151c; --surface2:#1a1f2a; --surface3:#0e1018;
+    --border:#1e2330; --text:#e8ecf4; --muted:#6b7589; --dim:#3a4258;
+    --accent:#f0b429; --accent2:#e05c2a; --green:#3ecf8e; --red:#f87171;
+    --blue:#60a5fa; --purple:#a78bfa; --shadow:rgba(0,0,0,.4);
   }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; }
-
-  header {
-    padding: 44px 40px 28px;
-    border-bottom: 1px solid var(--border);
-    position: relative; overflow: hidden;
+  :root[data-theme="light"] {
+    --bg:#f0f2f7; --surface:#ffffff; --surface2:#eaecf3; --surface3:#f7f8fb;
+    --border:#dde0ea; --text:#1a1d2e; --muted:#6b7589; --dim:#9ba5bc;
+    --accent:#c98f0a; --accent2:#c04e22; --green:#1fa870; --red:#dc2626;
+    --blue:#2563eb; --purple:#7c3aed; --shadow:rgba(0,0,0,.07);
   }
-  header::after {
-    content:'2026'; position:absolute; right:-8px; top:-16px;
-    font-family:'Bebas Neue'; font-size:min(180px, 30vw);
-    color:rgba(240,180,41,0.04); pointer-events:none; line-height:1;
-  }
-  .header-inner { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:16px; }
-  h1 { font-family:'Bebas Neue'; font-size:clamp(38px,7vw,76px); line-height:.88; letter-spacing:2px; }
-  h1 span { color:var(--accent); }
-  .subtitle { font-size:11px; color:#3a4258; letter-spacing:3px; text-transform:uppercase; margin-top:10px; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;transition:background .2s,color .2s;}
 
-  .badge {
-    display:flex; align-items:center; gap:8px;
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:100px; padding:8px 18px; font-size:12px; color:var(--muted); letter-spacing:1px;
-  }
-  .dot { width:7px; height:7px; border-radius:50%; background:var(--green); }
-  .dot.loading { background:var(--accent); animation:pulse 1.2s infinite; }
-  .dot.error { background:var(--red); }
+  header{padding:40px 40px 24px;border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
+  header::after{content:'2026';position:absolute;right:-6px;top:-14px;font-family:'Bebas Neue';font-size:min(170px,28vw);color:rgba(240,180,41,0.05);pointer-events:none;line-height:1;}
+  .header-inner{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+  h1{font-family:'Bebas Neue';font-size:clamp(36px,6.5vw,72px);line-height:.88;letter-spacing:2px;}
+  h1 span{color:var(--accent);}
+  .subtitle{font-size:11px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;margin-top:10px;}
+  .hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 
-  .controls {
-    padding:16px 40px; display:flex; align-items:center; gap:10px;
-    flex-wrap:wrap; border-bottom:1px solid var(--border);
-  }
-  .fbtn {
-    padding:6px 16px; border-radius:100px; border:1px solid var(--border);
-    background:transparent; color:var(--muted); font-family:'DM Sans';
-    font-size:12px; letter-spacing:1px; cursor:pointer; transition:all .15s;
-  }
-  .fbtn.active, .fbtn:hover { border-color:var(--accent); color:var(--accent); background:rgba(240,180,41,0.08); }
-  .spacer { flex:1; }
-  .search {
-    display:flex; align-items:center; gap:8px;
-    background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 14px;
-  }
-  .search input { background:transparent; border:none; outline:none; color:var(--text); font-family:'DM Sans'; font-size:13px; width:160px; }
-  .search input::placeholder { color:#3a4258; }
+  .badge{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:8px 16px;font-size:12px;color:var(--muted);}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;}
+  .dot.loading{background:var(--accent);animation:pulse 1.2s infinite;}
+  .dot.error{background:var(--red);}
 
-  .table-wrap { padding:20px 40px 60px; overflow-x:auto; }
-  table { width:100%; border-collapse:collapse; }
-  thead tr { border-bottom:1px solid var(--border); }
-  th {
-    font-size:10px; letter-spacing:2px; text-transform:uppercase;
-    color:#3a4258; padding:12px 14px; text-align:left; font-weight:500;
-    cursor:pointer; white-space:nowrap; user-select:none; transition:color .15s;
-  }
-  th:hover { color:var(--text); }
-  th.asc::after { content:' ↑'; color:var(--accent); }
-  th.desc::after { content:' ↓'; color:var(--accent); }
-  th.active { color:var(--accent); }
+  .theme-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s;}
+  .theme-btn:hover{border-color:var(--accent);}
 
-  tbody tr { border-bottom:1px solid rgba(30,35,48,.5); transition:background .12s; animation:rowIn .35s ease both; }
-  tbody tr:hover { background:var(--surface); }
+  .tab-nav{display:flex;border-bottom:1px solid var(--border);padding:0 40px;overflow-x:auto;background:var(--surface3);}
+  .tab{padding:13px 20px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;font-family:'DM Sans';}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .tab:hover{color:var(--text);}
 
-  td { padding:13px 14px; font-size:14px; vertical-align:middle; }
+  .controls{padding:13px 40px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--surface3);}
+  .fbtn{padding:5px 14px;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans';font-size:11px;letter-spacing:1px;cursor:pointer;transition:all .15s;}
+  .fbtn.active,.fbtn:hover{border-color:var(--accent);color:var(--accent);background:rgba(240,180,41,0.08);}
+  .spacer{flex:1;min-width:8px;}
+  .srch{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 12px;}
+  .srch input{background:transparent;border:none;outline:none;color:var(--text);font-family:'DM Sans';font-size:13px;width:150px;}
+  .srch input::placeholder{color:var(--dim);}
 
-  .pick-num { font-family:'Bebas Neue'; font-size:22px; color:#3a4258; line-height:1; }
-  .pick-round { font-size:9px; color:#252c3e; letter-spacing:1px; text-transform:uppercase; }
+  .table-wrap{padding:16px 40px 60px;overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;}
+  thead tr{border-bottom:1px solid var(--border);}
+  th{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);padding:11px 11px;text-align:left;font-weight:500;cursor:pointer;white-space:nowrap;user-select:none;transition:color .15s;}
+  th:hover{color:var(--text);}
+  th.active{color:var(--accent);}
+  th.asc::after{content:' ↑';color:var(--accent);}
+  th.desc::after{content:' ↓';color:var(--accent);}
+  tbody tr{border-bottom:1px solid rgba(30,35,48,.4);transition:background .1s;animation:rowIn .3s ease both;}
+  [data-theme="light"] tbody tr{border-bottom-color:rgba(221,224,234,.6);}
+  tbody tr:hover{background:var(--surface2);}
+  td{padding:11px 11px;font-size:13px;vertical-align:middle;}
 
-  .pos-badge {
-    display:inline-block; padding:3px 10px; border-radius:4px;
-    font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase;
-    min-width:40px; text-align:center;
-  }
-  .QB { background:rgba(224,92,42,.15); color:#e05c2a; border:1px solid rgba(224,92,42,.3); }
-  .RB { background:rgba(62,207,142,.12); color:#3ecf8e; border:1px solid rgba(62,207,142,.25); }
-  .WR { background:rgba(240,180,41,.12); color:#f0b429; border:1px solid rgba(240,180,41,.25); }
-  .TE { background:rgba(167,139,250,.12); color:#a78bfa; border:1px solid rgba(167,139,250,.25); }
+  .pick-num{font-family:'Bebas Neue';font-size:21px;color:var(--dim);line-height:1;}
+  .pick-round{font-size:9px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;opacity:.6;}
 
-  .rank-val { font-family:'Bebas Neue'; font-size:22px; }
-  .rank-top10 { color:var(--green); }
-  .rank-top25 { color:var(--accent); }
-  .rank-lower { color:var(--muted); }
-  .rank-none  { font-family:'DM Sans'; font-size:12px; color:#252c3e; }
+  .pos-badge{display:inline-block;padding:2px 9px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;min-width:36px;text-align:center;}
+  .QB{background:rgba(224,92,42,.14);color:#e05c2a;border:1px solid rgba(224,92,42,.28);}
+  .RB{background:rgba(62,207,142,.11);color:var(--green);border:1px solid rgba(62,207,142,.24);}
+  [data-theme="light"] .RB{color:#1fa870;}
+  .WR{background:rgba(240,180,41,.11);color:var(--accent);border:1px solid rgba(240,180,41,.24);}
+  .TE{background:rgba(167,139,250,.11);color:var(--purple);border:1px solid rgba(167,139,250,.24);}
+  [data-theme="light"] .TE{color:#7c3aed;}
 
-  .vbar-wrap { display:flex; align-items:center; gap:10px; }
-  .vbar-num { font-weight:600; font-size:13px; min-width:42px; text-align:right; }
-  .vbar-bg { flex:1; height:4px; background:var(--surface2); border-radius:2px; overflow:hidden; min-width:60px; }
-  .vbar-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,var(--accent2),var(--accent)); }
+  .rank-big{font-family:'Bebas Neue';font-size:21px;}
+  .top5{color:var(--green);}
+  .top15{color:var(--accent);}
+  .top30{color:var(--blue);}
+  .lower{color:var(--muted);}
+  .rnone{font-family:'DM Sans';font-size:12px;color:var(--dim);}
 
-  .center { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:380px; gap:20px; }
-  .spinner { width:38px; height:38px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
-  .load-txt { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
-  .err-box { margin:40px; padding:20px 24px; background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.2); border-radius:8px; color:var(--red); font-size:13px; line-height:1.7; }
+  .tier-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.5px;}
+  .t1{background:rgba(62,207,142,.12);color:var(--green);border:1px solid rgba(62,207,142,.25);}
+  .t2{background:rgba(96,165,250,.12);color:var(--blue);border:1px solid rgba(96,165,250,.25);}
+  .t3{background:rgba(240,180,41,.12);color:var(--accent);border:1px solid rgba(240,180,41,.25);}
+  .t4{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.22);}
+  .t5{background:rgba(107,117,137,.1);color:var(--muted);border:1px solid rgba(107,117,137,.22);}
 
-  .ktc-note { padding:10px 40px; font-size:11px; color:#3a4258; border-bottom:1px solid var(--border); }
-  .ktc-note a { color:var(--muted); }
+  .trend-pos{color:var(--green);font-weight:600;}
+  .trend-neg{color:var(--red);font-weight:600;}
+  .trend-neu{color:var(--muted);}
 
-  @keyframes rowIn { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes spin { to{transform:rotate(360deg)} }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .steal-badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:100px;font-size:10px;font-weight:700;white-space:nowrap;}
+  .steal-great{background:rgba(62,207,142,.12);color:var(--green);border:1px solid rgba(62,207,142,.25);}
+  .steal-good{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.2);}
+  .steal-fair{background:rgba(240,180,41,.1);color:var(--accent);border:1px solid rgba(240,180,41,.2);}
+  .steal-reach{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2);}
 
-  @media(max-width:700px) {
-    header,.controls,.table-wrap,.ktc-note { padding-left:16px; padding-right:16px; }
-    header::after { display:none; }
-    .vbar-bg { display:none; }
-    td,th { padding:10px 8px; }
+  .vbar-wrap{display:flex;align-items:center;gap:8px;}
+  .vbar-num{font-weight:600;font-size:12px;min-width:38px;text-align:right;}
+  .vbar-bg{flex:1;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden;min-width:48px;}
+  .vbar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent2),var(--accent));}
+
+  /* ── Team cards ── */
+  .teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;padding:20px 40px 60px;}
+  .team-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:box-shadow .2s;}
+  .team-card:hover{box-shadow:0 4px 24px var(--shadow);}
+  .team-header{padding:16px 18px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;}
+  .team-name{font-weight:700;font-size:15px;}
+  .team-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+  .draft-grade{font-family:'Bebas Neue';font-size:36px;line-height:1;}
+  .gA{color:var(--green);}
+  .gB{color:var(--accent);}
+  .gC{color:var(--blue);}
+  .gD{color:var(--red);}
+  .team-stats{padding:11px 18px;display:flex;gap:16px;border-bottom:1px solid var(--border);}
+  .tstat{flex:1;}
+  .tstat-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:3px;}
+  .tstat-val{font-size:14px;font-weight:600;}
+  .team-picks-list{padding:10px 18px 14px;}
+  .tp-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+  .tp-row:last-child{border-bottom:none;}
+  [data-theme="light"] .tp-row{border-bottom-color:rgba(221,224,234,.5);}
+  .tp-num{font-family:'Bebas Neue';font-size:15px;color:var(--dim);min-width:22px;}
+  .tp-name{flex:1;font-size:13px;font-weight:500;}
+  .draft-note{padding:10px 18px 14px;font-size:12px;color:var(--muted);font-style:italic;line-height:1.55;border-top:1px solid var(--border);}
+
+  .center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:360px;gap:20px;}
+  .spinner{width:36px;height:36px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+  .load-txt{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+  .err-box{margin:32px 40px;padding:18px 22px;background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.18);border-radius:8px;color:var(--red);font-size:13px;line-height:1.7;}
+  .ktc-note{padding:7px 40px;font-size:10px;color:var(--dim);border-bottom:1px solid var(--border);background:var(--surface3);}
+  .ktc-note a{color:var(--muted);}
+
+  @keyframes rowIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  @media(max-width:680px){
+    header,.controls,.table-wrap,.ktc-note,.teams-grid,.tab-nav{padding-left:14px;padding-right:14px;}
+    header::after{display:none;}
+    .vbar-bg{display:none;}
+    .teams-grid{grid-template-columns:1fr;}
   }
 </style>
 </head>
@@ -127,12 +154,20 @@
       <h1>ROOKIE<br><span>DRAFT</span> BOARD</h1>
       <p class="subtitle">Dynasty League · 2026 Season</p>
     </div>
-    <div class="badge">
-      <span class="dot loading" id="dot"></span>
-      <span id="badgeTxt">Laden…</span>
+    <div class="hdr-right">
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+      <div class="badge">
+        <span class="dot loading" id="dot"></span>
+        <span id="badgeTxt">Laden…</span>
+      </div>
     </div>
   </div>
 </header>
+
+<div class="tab-nav">
+  <button class="tab active" onclick="switchTab('picks',this)">📋 Alle Picks</button>
+  <button class="tab" onclick="switchTab('teams',this)">🏆 Team-Analyse</button>
+</div>
 
 <div class="controls">
   <button class="fbtn active" data-pos="ALL">Alle</button>
@@ -141,14 +176,15 @@
   <button class="fbtn" data-pos="WR">WR</button>
   <button class="fbtn" data-pos="TE">TE</button>
   <div class="spacer"></div>
-  <div class="search">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3a4258" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input id="searchInput" type="text" placeholder="Spieler suchen…">
+  <div class="srch">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="color:var(--dim)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="searchInput" type="text" placeholder="Spieler / Team…">
   </div>
 </div>
 
 <div class="ktc-note">
-  KTC-Werte: Superflex / 0.5 PPR · Stand Mai 2026 · <a href="https://keeptradecut.com/dynasty-rankings/rookie-rankings" target="_blank">keeptradecut.com ↗</a>
+  KTC: 1QB / 0.5 PPR · Stand Mai 2026 ·
+  <a href="https://keeptradecut.com/dynasty-rankings/rookie-rankings" target="_blank">keeptradecut.com ↗</a>
 </div>
 
 <div id="main">
@@ -159,248 +195,347 @@
 </div>
 
 <script>
-// ─── KTC Data (Superflex/0.5PPR, Mai 2026) ───────────────────────────────────
-// Format: [name, position, ktcRank, ktcValue, nflTeam]
-const KTC = [
-  ["Cam Ward",          "QB", 1,  9823, "TEN"],
-  ["Ashton Jeanty",     "RB", 2,  9654, "LVR"],
-  ["Travis Hunter",     "WR", 3,  9501, "JAC"],
-  ["Shedeur Sanders",   "QB", 4,  9210, "CLE"],
-  ["Tetairoa McMillan", "WR", 5,  8890, "CAR"],
-  ["Omarion Hampton",   "RB", 6,  8710, "LAR"],
-  ["Dillon Gabriel",    "QB", 7,  8340, "PHI"],
-  ["Colston Loveland",  "TE", 8,  7980, "CHI"],
-  ["Tyler Warren",      "TE", 9,  7820, "IND"],
-  ["Luther Burden",     "WR", 10, 7650, "CHI"],
-  ["TreVeyon Henderson","RB", 11, 7420, "NWE"],
-  ["Matthew Golden",    "WR", 12, 7280, "GBP"],
-  ["Emeka Egbuka",      "WR", 13, 7110, "TBB"],
-  ["Kaleb Johnson",     "RB", 14, 6940, "PIT"],
-  ["Jaylen Mbeki",      "WR", 15, 6780, "DEN"],
-  ["Devin Neal",        "RB", 16, 6590, "KCC"],
-  ["Harold Fannin",     "TE", 17, 6410, "CLE"],
-  ["Donovan Ezeiruaku", "WR", 18, 6250, "NWE"], // Edge listed as WR on dynasty
-  ["Jack Bech",         "WR", 19, 6080, "LVR"],
-  ["Elic Ayomanor",     "WR", 20, 5920, "TEN"],
-  ["Darryn Peterson",   "WR", 21, 5780, "KCC"],
-  ["Nick Emmanwori",    "WR", 22, 5620, "CAR"],
-  ["Kyle Williams",     "WR", 23, 5470, "NWE"],
-  ["Jalen Milroe",      "QB", 24, 5310, "SEA"],
-  ["Quinshon Judkins",  "RB", 25, 5180, "MIA"],
-  ["Bhayshul Tuten",    "RB", 26, 5040, "NYJ"],
-  ["Jordan James",      "RB", 27, 4910, "SFO"],
-  ["Jaxson Dart",       "QB", 28, 4780, "NYG"],
-  ["Jaylen Reed",       "WR", 29, 4650, "PIT"],
-  ["RJ Harvey",         "RB", 30, 4520, "DEN"],
-  ["Tre Harris",        "WR", 31, 4400, "LAC"],
-  ["Jaydon Blue",       "RB", 32, 4280, "HOU"],
-  ["Isaiah Bond",       "WR", 33, 4160, "DAL"],
-  ["Chimere Dike",      "WR", 34, 4050, "CIN"],
-  ["Ollie Gordon",      "RB", 35, 3940, "DAL"],
-  ["Princely Umanmielen","WR",36, 3830, "ATL"],
-  ["Savion Williams",   "WR", 37, 3720, "PHI"],
-  ["Kobe Lewis",        "WR", 38, 3620, "DET"],
-  ["Cam Skattebo",      "RB", 39, 3510, "NYG"],
-  ["Dont'e Thornton",   "WR", 40, 3410, "NWE"],
-  ["Marcus Harris",     "WR", 41, 3310, "CLE"],
-  ["Jacory Croskey-Merritt","RB",42,3210,"ARI"],
-  ["Elic Ayomanor",     "WR", 43, 3120, "TEN"],
-  ["Kevin Winston",     "WR", 44, 3030, "SFO"],
-  ["Terrance Ferguson", "TE", 45, 2940, "LAR"],
-  ["CJ Baxter",         "RB", 46, 2860, "JAC"],
-  ["Duce Chestnut",     "WR", 47, 2780, "MIA"],
-  ["Brashard Smith",    "WR", 48, 2700, "KCC"],
-  ["Tez Johnson",       "WR", 49, 2620, "DET"],
-  ["Ben Yurosek",       "TE", 50, 2550, "ATL"],
-  ["Jonah Monheim",     "WR", 51, 2480, "BAL"],
-  ["Jared Verse",       "WR", 52, 2410, "LAR"],
-  ["KJ Jefferson",      "QB", 53, 2340, "ATL"],
-  ["Max Melton",        "WR", 54, 2270, "SFO"],
-  ["Will Howard",       "QB", 55, 2200, "PIT"],
-  ["Aidan Borguet",     "WR", 56, 2140, "SEA"],
-  ["Dontayvion Wicks",  "WR", 57, 2080, "GBP"],
-  ["Tyler Shough",      "QB", 58, 2020, "NOR"],
-  ["Eli Whittaker",     "RB", 59, 1960, "TBB"],
-  ["Cam Jones",         "WR", 60, 1900, "LAR"],
+// ── KTC Data (1QB/0.5PPR, Mai 2026, aus PDF) ──────────────────────────────────
+// [name, pos, rank, value, tier, trend30, nflTeam]
+const KTC_RAW = [
+  ["Jeremiyah Love",      "RB",  1, 7889,  1,   0, "ARI"],
+  ["Carnell Tate",        "WR",  2, 6337,  2,   0, "TEN"],
+  ["Jordyn Tyson",        "WR",  3, 5994,  2,   1, "NOS"],
+  ["Makai Lemon",         "WR",  4, 5708,  2,  -1, "PHI"],
+  ["Jadarian Price",      "RB",  5, 5469,  2,   5, "SEA"],
+  ["KC Concepcion",       "WR",  6, 5236,  2,   1, "CLE"],
+  ["Kenyon Sadiq",        "TE",  7, 4774,  3,  -2, "NYJ"],
+  ["Omar Cooper Jr.",     "WR",  8, 4731,  3,   0, "NYJ"],
+  ["Fernando Mendoza",    "QB",  9, 4703,  3,  -3, "LVR"],
+  ["Denzel Boston",       "WR", 10, 4347,  4,  -1, "CLE"],
+  ["Eli Stowers",         "TE", 11, 4298,  4,   1, "PHI"],
+  ["Jonah Coleman",       "RB", 12, 3740,  5,  -1, "DEN"],
+  ["Chris Bell",          "WR", 13, 3549,  5,   7, "MIA"],
+  ["Nicholas Singleton",  "RB", 14, 3518,  5,  -1, "TEN"],
+  ["Germie Bernard",      "WR", 15, 3388,  5,   9, "PIT"],
+  ["Elijah Sarratt",      "WR", 16, 3294,  5,  -1, "BAL"],
+  ["Zachariah Branch",    "WR", 17, 3260,  5,   2, "ATL"],
+  ["Ty Simpson",          "QB", 18, 3172,  6,  -4, "LAR"],
+  ["Chris Brazzell II",   "WR", 19, 3123,  6,  -2, "CAR"],
+  ["Malachi Fields",      "WR", 20, 3075,  6,   2, "NYG"],
+  ["Emmett Johnson",      "RB", 21, 3044,  6,  -3, "KCC"],
+  ["Mike Washington Jr.", "RB", 22, 3029,  6,  -6, "LVR"],
+  ["Kaytron Allen",       "RB", 23, 2837,  7,  -2, "WAS"],
+  ["Antonio Williams",    "WR", 24, 2797,  7,   4, "WAS"],
+  ["Skyler Bell",         "WR", 25, 2775,  7,   1, "BUF"],
+  ["Ja'Kobi Lane",        "WR", 26, 2737,  7,   3, "BAL"],
+  ["Max Klare",           "TE", 27, 2271,  8,   0, "LAR"],
+  ["Ted Hurst",           "WR", 28, 2109,  8,   5, "TBB"],
+  ["Kevin Coleman",       "WR", 29, 1993,  8,   2, "MIA"],
+  ["Demond Claiborne",    "RB", 30, 1825,  8,   2, "MIN"],
+  ["De'Zhaun Stribling",  "WR", 31, 1701,  8,  20, "SFO"],
+  ["Garrett Nussmeier",   "QB", 32, 1671,  8,  -2, "KCC"],
+  ["Michael Trigg",       "TE", 33, 1540,  8,  -4, "DAL"],
+  ["Justin Joly",         "TE", 34, 1350,  9,  18, "DEN"],
+  ["Brenen Thompson",     "WR", 35, 1323,  9,  17, "LAC"],
+  ["Le'Veon Moss",        "RB", 36, 1243, 10,  -2, "MIA"],
+  ["Kaelon Black",        "RB", 37, 1206, 10,  11, "SFO"],
+  ["Eli Raridon",         "TE", 38, 1189, 10,  16, "NEP"],
+  ["Deion Burks",         "WR", 39, 1162, 10,   1, "IND"],
+  ["Zavion Thomas",       "WR", 40, 1162, 10,  11, "CHI"],
+  ["Cade Klubnik",        "QB", 41, 1139, 10,   0, "NYJ"],
+  ["Bryce Lance",         "WR", 42, 1127, 10,   4, "NOS"],
+  ["Seth McGowan",        "RB", 43,  989, 11,  -8, "IND"],
+  ["Oscar Delp",          "TE", 44,  967, 11,   2, "NOS"],
+  ["Jam Miller",          "RB", 45,  964, 11,  -6, "NEP"],
+  ["Eli Heidenreich",     "RB", 47,  878, 12,  13, "PIT"],
+  ["J'Mari Taylor",       "RB", 49,  844, 12, -11, "JAC"],
+  ["CJ Daniels",          "WR", 50,  828, 12, -13, "LAR"],
+  ["Caleb Douglas",       "WR", 51,  823, 12,   8, "MIA"],
+  ["Adam Randall",        "RB", 53,  712, 12,   4, "BAL"],
+  ["Reggie Virgil",       "WR", 55,  620, 12, -10, "ARI"],
+  ["Drew Allar",          "QB", 60,  136, 13, -13, "PIT"],
+  ["Carson Beck",         "QB", 62,   98, 13, -15, "ARI"],
 ];
+const KTC_MAX = 7889;
 
-const KTC_MAX = 9823;
-
-// Build lookup
 const ktcMap = {};
-KTC.forEach(([name, pos, rank, value, team]) => {
-  ktcMap[norm(name)] = { name, pos, rank, value, team };
+KTC_RAW.forEach(([name,pos,rank,value,tier,trend,nflTeam])=>{
+  ktcMap[norm(name)]={name,pos,rank,value,tier,trend,nflTeam};
 });
 
-function norm(s = "") {
+function norm(s=""){
   return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
     .replace(/[^a-z0-9 ]/g,"").replace(/\s+/g," ").trim();
 }
-function nameSim(a, b) {
-  const na = norm(a), nb = norm(b);
-  if (na === nb) return 1;
-  const pa = na.split(" "), pb = nb.split(" ");
-  if (pa.length >= 2 && pb.length >= 2) {
-    const lastOk = pa[pa.length-1] === pb[pb.length-1];
-    const firstOk = pa[0][0] === pb[0][0];
-    if (lastOk && firstOk) return 0.9;
-    if (lastOk) return 0.7;
+function nameSim(a,b){
+  const na=norm(a),nb=norm(b);
+  if(na===nb) return 1;
+  const pa=na.split(" "),pb=nb.split(" ");
+  if(pa.length>=2&&pb.length>=2){
+    if(pa[pa.length-1]===pb[pb.length-1]&&pa[0][0]===pb[0][0]) return 0.9;
+    if(pa[pa.length-1]===pb[pb.length-1]) return 0.7;
   }
   return 0;
 }
-function findKtc(name) {
-  const n = norm(name);
-  if (ktcMap[n]) return ktcMap[n];
-  let best = null, bestScore = 0;
-  Object.values(ktcMap).forEach(p => {
-    const s = nameSim(name, p.name);
-    if (s > bestScore && s >= 0.85) { bestScore = s; best = p; }
+function findKtc(name){
+  const n=norm(name);
+  if(ktcMap[n]) return ktcMap[n];
+  let best=null,bs=0;
+  Object.values(ktcMap).forEach(p=>{
+    const s=nameSim(name,p.name);
+    if(s>bs&&s>=0.85){bs=s;best=p;}
   });
   return best;
 }
 
-// ─── State ────────────────────────────────────────────────────────────────────
-let allRows = [];
-let posFilter = "ALL";
-let sortCol = "pick";
-let sortDir = 1;
-
-// ─── Sleeper fetch ────────────────────────────────────────────────────────────
-const LEAGUE_ID = "1312799736218017792";
-
-async function loadDraft() {
-  setStep("Sleeper: Drafts abrufen…");
-
-  const draftsRes = await fetch(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/drafts`);
-  const drafts = await draftsRes.json();
-  if (!drafts?.length) throw new Error("Keine Drafts gefunden.");
-
-  const draft = drafts.find(d => d.type === "rookie") || drafts[0];
-  const draftId = draft.draft_id;
-
-  setStep("Picks laden…");
-  const [picksRes, usersRes, rostersRes] = await Promise.all([
-    fetch(`https://api.sleeper.app/v1/draft/${draftId}/picks`),
-    fetch(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/users`),
-    fetch(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/rosters`),
-  ]);
-  const picks   = await picksRes.json();
-  const users   = await usersRes.json();
-  const rosters = await rostersRes.json();
-
-  const userMap = {};
-  users.forEach(u => { userMap[u.user_id] = u.metadata?.team_name || u.display_name || u.username; });
-  const rosterUser = {};
-  rosters.forEach(r => { rosterUser[r.roster_id] = r.owner_id; });
-
-  allRows = picks.map(pick => {
-    const m = pick.metadata || {};
-    const fullName = (m.first_name && m.last_name) ? `${m.first_name} ${m.last_name}` : (m.name || pick.player_id || "?");
-    const pickNum = pick.pick_no || ((pick.round - 1) * 12 + pick.draft_slot);
-    const userId = rosterUser[pick.roster_id] || pick.picked_by;
-    const drafter = userMap[userId] || `Team ${pick.roster_id}`;
-    const position = m.position || "?";
-    const ktc = findKtc(fullName);
-    return {
-      fullName, pickNum, round: pick.round, drafter, position,
-      ktcRank: ktc?.rank || null,
-      ktcValue: ktc?.value || null,
-      ktcTeam: ktc?.team || m.team || "",
-    };
-  });
-
-  setBadge("done", `${allRows.length} Picks geladen`);
-  renderTable();
+// ── Steal ─────────────────────────────────────────────────────────────────────
+function stealInfo(pickNum,ktcRank){
+  if(!ktcRank) return null;
+  const d=pickNum-ktcRank;
+  if(d>=8)  return{label:"🔥 Großer Steal",cls:"steal-great",d};
+  if(d>=4)  return{label:"✅ Steal",cls:"steal-good",d};
+  if(d>=-3) return{label:"≈ Fair Value",cls:"steal-fair",d};
+  if(d>=-7) return{label:"⚠ Leichter Reach",cls:"steal-reach",d};
+  return        {label:"❌ Reach",cls:"steal-reach",d};
 }
 
-// ─── Render ───────────────────────────────────────────────────────────────────
-function renderTable() {
-  const search = norm(document.getElementById("searchInput").value);
-  const filtered = allRows
-    .filter(r => posFilter === "ALL" || r.position === posFilter)
-    .filter(r => !search || norm(r.fullName).includes(search) || norm(r.drafter).includes(search))
-    .sort((a, b) => {
-      let av, bv;
-      if      (sortCol === "pick")    { av = a.pickNum;         bv = b.pickNum; }
-      else if (sortCol === "name")    { av = a.fullName;        bv = b.fullName; }
-      else if (sortCol === "pos")     { av = a.position;        bv = b.position; }
-      else if (sortCol === "drafter") { av = a.drafter;         bv = b.drafter; }
-      else if (sortCol === "rank")    { av = a.ktcRank||9999;   bv = b.ktcRank||9999; }
-      else if (sortCol === "value")   { av = -(a.ktcValue||0);  bv = -(b.ktcValue||0); }
-      else { av = a.pickNum; bv = b.pickNum; }
-      return av > bv ? sortDir : av < bv ? -sortDir : 0;
+// ── Grade ─────────────────────────────────────────────────────────────────────
+function calcGrade(picks){
+  // Only picks R1–R3 (pick <= leagueSize*3) with KTC match
+  const leagueSize=12;
+  const valid=picks.filter(p=>p.ktcRank&&p.round<=3);
+  if(!valid.length) return{grade:"—",cls:"",avgValue:null,avgTier:null,avgTrend:null,note:"Keine bewertbaren Picks (R1–R3)."};
+
+  const avgVal  =Math.round(valid.reduce((s,p)=>s+(p.ktcValue||0),0)/valid.length);
+  const avgTier =(valid.reduce((s,p)=>s+(p.ktcTier||5),0)/valid.length).toFixed(1);
+  const avgTrend=(valid.reduce((s,p)=>s+(p.ktcTrend||0),0)/valid.length).toFixed(1);
+  const avgDelta=valid.reduce((s,p)=>s+(p.pickNum-p.ktcRank),0)/valid.length;
+
+  let grade,cls,note;
+  if(avgVal>=4500||(avgVal>=3500&&avgDelta>=4)){grade="A+";cls="gA";note="Herausragendes Draft — Top-Werte und cleveres Timing.";}
+  else if(avgVal>=3200||(avgVal>=2600&&avgDelta>=4)){grade="A";cls="gA";note="Starkes Draft mit guten Value Picks.";}
+  else if(avgVal>=2200){grade="B+";cls="gB";note="Solides Draft, guter Durchschnittswert.";}
+  else if(avgVal>=1500){grade="B";cls="gB";note="Ordentliches Draft. Einige interessante Picks.";}
+  else if(avgVal>=900){grade="C";cls="gC";note="Durchwachsenes Draft — viele spätere Tier-Picks.";}
+  else{grade="D";cls="gD";note="Schwaches Draft nach KTC-Werten.";}
+
+  if(avgDelta>=5) note+=" Sehr gutes Pick-Timing! ⏱";
+  else if(avgDelta<=-5) note+=" Mehrere teure Reaches.";
+  if(parseFloat(avgTrend)>8) note+=" Trend zeigt stark nach oben 📈";
+  else if(parseFloat(avgTrend)<-8) note+=" Vorsicht: Trend zeigt nach unten 📉";
+
+  return{grade,cls,avgValue:avgVal,avgTier,avgTrend,note};
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let allRows=[];
+let curTab="picks";
+let posFilter="ALL";
+let sortCol="pick",sortDir=1;
+const LEAGUE_ID="1312799736218017792";
+
+// ── Sleeper ───────────────────────────────────────────────────────────────────
+async function loadDraft(){
+  setStep("Sleeper: Drafts abrufen…");
+  const drafts=await(await fetch(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/drafts`)).json();
+  if(!drafts?.length) throw new Error("Keine Drafts gefunden.");
+  const draft=drafts.find(d=>d.type==="rookie")||drafts[0];
+
+  setStep("Picks + Manager laden…");
+  const[picks,users,rosters]=await Promise.all([
+    fetch(`https://api.sleeper.app/v1/draft/${draft.draft_id}/picks`).then(r=>r.json()),
+    fetch(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/users`).then(r=>r.json()),
+    fetch(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/rosters`).then(r=>r.json()),
+  ]);
+
+  const userMap={};
+  users.forEach(u=>{userMap[u.user_id]=u.metadata?.team_name||u.display_name||u.username;});
+  const rosterUser={};
+  rosters.forEach(r=>{rosterUser[r.roster_id]=r.owner_id;});
+
+  allRows=picks.map(pick=>{
+    const m=pick.metadata||{};
+    const fullName=(m.first_name&&m.last_name)?`${m.first_name} ${m.last_name}`:(m.name||pick.player_id||"?");
+    const pickNum=pick.pick_no||((pick.round-1)*12+pick.draft_slot);
+    const userId=rosterUser[pick.roster_id]||pick.picked_by;
+    const drafter=userMap[userId]||`Team ${pick.roster_id}`;
+    const position=m.position||"?";
+    const ktc=findKtc(fullName);
+    return{fullName,pickNum,round:pick.round,drafter,position,
+      ktcRank:ktc?.rank||null,ktcValue:ktc?.value||null,
+      ktcTier:ktc?.tier||null,ktcTrend:ktc?.trend||null,
+      ktcTeam:ktc?.nflTeam||m.team||""};
+  });
+
+  setBadge("done",`${allRows.length} Picks geladen`);
+  renderView();
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderView(){
+  if(curTab==="picks") renderPicks();
+  else renderTeams();
+}
+
+const tierCls=t=>["","t1","t2","t3","t4","t5"][Math.min(t||5,5)]||"t5";
+const trendHtml=t=>{
+  if(t===null||t===undefined) return '<span class="trend-neu">—</span>';
+  if(t>0) return`<span class="trend-pos">▲${t}</span>`;
+  if(t<0) return`<span class="trend-neg">▼${Math.abs(t)}</span>`;
+  return'<span class="trend-neu">0</span>';
+};
+const rankCls=r=>!r?"rnone":r<=5?"top5":r<=15?"top15":r<=30?"top30":"lower";
+
+function renderPicks(){
+  const q=norm(document.getElementById("searchInput").value);
+  const rows=allRows
+    .filter(r=>posFilter==="ALL"||r.position===posFilter)
+    .filter(r=>!q||norm(r.fullName).includes(q)||norm(r.drafter).includes(q))
+    .sort((a,b)=>{
+      let av,bv;
+      if(sortCol==="pick")    {av=a.pickNum;bv=b.pickNum;}
+      else if(sortCol==="name")    {av=a.fullName;bv=b.fullName;}
+      else if(sortCol==="pos")     {av=a.position;bv=b.position;}
+      else if(sortCol==="drafter") {av=a.drafter;bv=b.drafter;}
+      else if(sortCol==="rank")    {av=a.ktcRank||9999;bv=b.ktcRank||9999;}
+      else if(sortCol==="value")   {av=-(a.ktcValue||0);bv=-(b.ktcValue||0);}
+      else if(sortCol==="tier")    {av=a.ktcTier||99;bv=b.ktcTier||99;}
+      else if(sortCol==="trend")   {av=-(a.ktcTrend||0);bv=-(b.ktcTrend||0);}
+      else{av=a.pickNum;bv=b.pickNum;}
+      return av>bv?sortDir:av<bv?-sortDir:0;
     });
 
-  const rankCls = r => !r ? "rank-none" : r<=10 ? "rank-top10" : r<=25 ? "rank-top25" : "rank-lower";
-
-  document.getElementById("main").innerHTML = `
+  document.getElementById("main").innerHTML=`
     <div class="table-wrap">
       <table>
         <thead><tr>
-          ${[["pick","Pick"],["name","Spieler"],["pos","Pos"],["team","NFL-Team"],["drafter","Gedraftet von"],["rank","KTC Rank"],["value","KTC Value"]]
-            .map(([c,l]) => `<th data-col="${c}" class="${sortCol===c?(sortDir>0?'asc active':'desc active'):''}"">${l}</th>`).join("")}
+          ${[["pick","Pick"],["name","Spieler"],["pos","Pos"],["team","NFL"],["drafter","Gedraftet von"],["rank","KTC #"],["tier","Tier"],["trend","30d"],["value","Value"],["steal","Steal?"]]
+            .map(([c,l])=>`<th data-col="${c}" class="${sortCol===c?(sortDir>0?"asc active":"desc active"):""}">${l}</th>`).join("")}
         </tr></thead>
         <tbody>
-          ${filtered.length === 0
-            ? `<tr><td colspan="7" style="text-align:center;color:#3a4258;padding:60px 0;font-size:13px">Keine Spieler gefunden</td></tr>`
-            : filtered.map((r,i) => `
-            <tr style="animation-delay:${i*.028}s">
-              <td><div class="pick-num">${r.pickNum}</div><div class="pick-round">Runde ${r.round}</div></td>
-              <td style="font-weight:600;min-width:160px">${r.fullName}</td>
-              <td><span class="pos-badge ${r.position}">${r.position}</span></td>
-              <td style="font-size:12px;color:var(--muted)">${r.ktcTeam||"—"}</td>
-              <td style="font-size:13px;color:var(--muted)">${r.drafter}</td>
-              <td><span class="rank-val ${rankCls(r.ktcRank)}">${r.ktcRank?"#"+r.ktcRank:"—"}</span></td>
-              <td style="min-width:130px">
-                ${r.ktcValue!=null?`
-                  <div class="vbar-wrap">
-                    <span class="vbar-num">${r.ktcValue.toLocaleString()}</span>
-                    <div class="vbar-bg"><div class="vbar-fill" style="width:${Math.round(r.ktcValue/KTC_MAX*100)}%"></div></div>
-                  </div>`:
-                  `<span style="font-size:12px;color:#252c3e">—</span>`}
-              </td>
-            </tr>`).join("")}
+          ${!rows.length
+            ?`<tr><td colspan="10" style="text-align:center;color:var(--dim);padding:60px 0;font-size:13px">Keine Spieler gefunden</td></tr>`
+            :rows.map((r,i)=>{
+              const st=stealInfo(r.pickNum,r.ktcRank);
+              return`<tr style="animation-delay:${i*.024}s">
+                <td><div class="pick-num">${r.pickNum}</div><div class="pick-round">R${r.round}</div></td>
+                <td style="font-weight:600;min-width:148px">${r.fullName}</td>
+                <td><span class="pos-badge ${r.position}">${r.position}</span></td>
+                <td style="font-size:11px;color:var(--muted)">${r.ktcTeam||"—"}</td>
+                <td style="font-size:12px;color:var(--muted);min-width:110px">${r.drafter}</td>
+                <td><span class="rank-big ${rankCls(r.ktcRank)}">${r.ktcRank?"#"+r.ktcRank:"—"}</span></td>
+                <td>${r.ktcTier?`<span class="tier-badge ${tierCls(r.ktcTier)}">T${r.ktcTier}</span>`:`<span style="color:var(--dim)">—</span>`}</td>
+                <td>${trendHtml(r.ktcTrend)}</td>
+                <td style="min-width:118px">${r.ktcValue!=null?`<div class="vbar-wrap"><span class="vbar-num">${r.ktcValue.toLocaleString()}</span><div class="vbar-bg"><div class="vbar-fill" style="width:${Math.round(r.ktcValue/KTC_MAX*100)}%"></div></div></div>`:`<span style="color:var(--dim);font-size:12px">—</span>`}</td>
+                <td>${st?`<span class="steal-badge ${st.cls}">${st.label}</span>`:`<span style="color:var(--dim);font-size:12px">—</span>`}</td>
+              </tr>`;}).join("")}
         </tbody>
       </table>
     </div>`;
 
-  // Re-attach sort listeners
-  document.querySelectorAll("th[data-col]").forEach(th => {
-    th.addEventListener("click", () => {
-      const c = th.dataset.col;
-      if (sortCol === c) sortDir *= -1; else { sortCol = c; sortDir = 1; }
-      renderTable();
+  document.querySelectorAll("th[data-col]").forEach(th=>{
+    th.addEventListener("click",()=>{
+      const c=th.dataset.col;
+      if(sortCol===c)sortDir*=-1;else{sortCol=c;sortDir=1;}
+      renderPicks();
     });
   });
 }
 
-// ─── UI helpers ───────────────────────────────────────────────────────────────
-function setStep(msg) { const el=document.getElementById("loadTxt"); if(el) el.textContent=msg; }
-function setBadge(state, msg) {
-  document.getElementById("badgeTxt").textContent = msg;
-  const d = document.getElementById("dot");
-  d.className = "dot" + (state==="loading"?" loading":state==="error"?" error":"");
+function renderTeams(){
+  const q=norm(document.getElementById("searchInput").value);
+  const teams={};
+  allRows.forEach(r=>{if(!teams[r.drafter])teams[r.drafter]=[];teams[r.drafter].push(r);});
+
+  const list=Object.entries(teams)
+    .filter(([n])=>!q||norm(n).includes(q))
+    .sort((a,b)=>{
+      // Sort by grade quality (avgValue of valid picks)
+      const ga=calcGrade(a[1]);
+      const gb=calcGrade(b[1]);
+      return (gb.avgValue||0)-(ga.avgValue||0);
+    });
+
+  document.getElementById("main").innerHTML=`
+    <div class="teams-grid">
+      ${list.map(([name,picks])=>{
+        const g=calcGrade(picks);
+        const sorted=[...picks].sort((a,b)=>a.pickNum-b.pickNum);
+        const valid=picks.filter(p=>p.ktcRank&&p.round<=3);
+        const trendNum=parseFloat(g.avgTrend);
+        return`
+        <div class="team-card">
+          <div class="team-header">
+            <div>
+              <div class="team-name">${name}</div>
+              <div class="team-sub">${picks.length} Picks · ${valid.length} bewertet (R1–R3)</div>
+            </div>
+            <div class="draft-grade ${g.cls}">${g.grade}</div>
+          </div>
+          <div class="team-stats">
+            <div class="tstat"><div class="tstat-label">Ø Value</div><div class="tstat-val">${g.avgValue!=null?g.avgValue.toLocaleString():"—"}</div></div>
+            <div class="tstat"><div class="tstat-label">Ø Tier</div><div class="tstat-val">${g.avgTier||"—"}</div></div>
+            <div class="tstat">
+              <div class="tstat-label">Ø 30d Trend</div>
+              <div class="tstat-val" style="color:${trendNum>0?"var(--green)":trendNum<0?"var(--red)":"var(--muted)"}">
+                ${g.avgTrend!=null?(trendNum>=0?"▲ ":"▼ ")+Math.abs(trendNum):"—"}
+              </div>
+            </div>
+          </div>
+          <div class="team-picks-list">
+            ${sorted.map(p=>{
+              const st=stealInfo(p.pickNum,p.ktcRank);
+              return`<div class="tp-row">
+                <span class="tp-num">${p.pickNum}</span>
+                <span class="pos-badge ${p.position}" style="font-size:9px;padding:1px 6px">${p.position}</span>
+                <span class="tp-name">${p.fullName}</span>
+                ${p.ktcTier?`<span class="tier-badge ${tierCls(p.ktcTier)}" style="font-size:9px;padding:1px 6px">T${p.ktcTier}</span>`:""}
+                ${st?`<span class="steal-badge ${st.cls}" style="font-size:9px;padding:2px 6px">${st.label}</span>`:""}
+              </div>`;}).join("")}
+          </div>
+          <div class="draft-note">💬 ${g.note}</div>
+        </div>`;}).join("")}
+    </div>`;
 }
 
-// ─── Event listeners ──────────────────────────────────────────────────────────
-document.querySelectorAll(".fbtn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    posFilter = btn.dataset.pos;
-    document.querySelectorAll(".fbtn").forEach(b => b.classList.remove("active"));
+// ── Theme ─────────────────────────────────────────────────────────────────────
+function toggleTheme(){
+  const html=document.documentElement;
+  const dark=html.getAttribute("data-theme")==="dark";
+  html.setAttribute("data-theme",dark?"light":"dark");
+  document.getElementById("themeBtn").textContent=dark?"☀️":"🌙";
+}
+
+// ── Tab ───────────────────────────────────────────────────────────────────────
+function switchTab(tab,btn){
+  curTab=tab;
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  btn.classList.add("active");
+  if(allRows.length) renderView();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function setStep(msg){const el=document.getElementById("loadTxt");if(el)el.textContent=msg;}
+function setBadge(state,msg){
+  document.getElementById("badgeTxt").textContent=msg;
+  const d=document.getElementById("dot");
+  d.className="dot"+(state==="loading"?" loading":state==="error"?" error":"");
+}
+
+document.querySelectorAll(".fbtn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    posFilter=btn.dataset.pos;
+    document.querySelectorAll(".fbtn").forEach(b=>b.classList.remove("active"));
     btn.classList.add("active");
-    if (allRows.length) renderTable();
+    if(allRows.length)renderView();
   });
 });
-document.getElementById("searchInput").addEventListener("input", () => {
-  if (allRows.length) renderTable();
+document.getElementById("searchInput").addEventListener("input",()=>{
+  if(allRows.length)renderView();
 });
 
-// ─── Boot ─────────────────────────────────────────────────────────────────────
-setBadge("loading", "Laden…");
-loadDraft().catch(err => {
-  document.getElementById("main").innerHTML =
-    `<div class="err-box"><strong>Fehler:</strong> ${err.message}<br><br><small>Überprüfe die League ID und versuche es erneut.</small></div>`;
-  setBadge("error", "Fehler");
+// ── Boot ──────────────────────────────────────────────────────────────────────
+setBadge("loading","Laden…");
+loadDraft().catch(err=>{
+  document.getElementById("main").innerHTML=
+    `<div class="err-box"><strong>Fehler:</strong> ${err.message}<br><br><small>Überprüfe die League ID und ob der Draft abgeschlossen ist.</small></div>`;
+  setBadge("error","Fehler");
   console.error(err);
 });
 </script>

@@ -140,11 +140,26 @@
   .rtbtn{padding:4px 11px;border-radius:6px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans';font-size:11px;font-weight:600;letter-spacing:.5px;cursor:pointer;transition:all .15s;white-space:nowrap;}
   .rtbtn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px var(--shadow);}
   .rtbtn.ktc-active{color:#3ecf8e;}
-  .rtbtn.fc-active{color:#60a5fa;}
   .rtbtn.fp-active{color:#f0b429;}
   .rtbtn.sl-active{color:#a78bfa;}
   .rtbtn.comp-active{color:#f87171;}
-  .fc-loading{font-size:10px;color:var(--muted);letter-spacing:1px;animation:pulse 1.2s infinite;}
+
+  /* Snapshot button */
+  .snap-btn{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:'DM Sans';font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap;}
+  .snap-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .snap-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;}
+  .snap-modal.open{display:flex;}
+  .snap-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 32px;max-width:460px;width:90%;display:flex;flex-direction:column;gap:16px;box-shadow:0 24px 60px rgba(0,0,0,.4);}
+  .snap-title{font-family:'Bebas Neue';font-size:24px;letter-spacing:1px;}
+  .snap-desc{font-size:13px;color:var(--muted);line-height:1.6;}
+  .snap-list{display:flex;flex-direction:column;gap:8px;}
+  .snap-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);}
+  .snap-item-name{font-size:13px;font-weight:500;}
+  .snap-item-date{font-size:11px;color:var(--muted);}
+  .snap-actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .snap-create{padding:10px 20px;background:var(--accent);color:#0a0c10;border:none;border-radius:8px;font-family:'DM Sans';font-weight:700;font-size:13px;cursor:pointer;}
+  .snap-close{padding:10px 20px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-family:'DM Sans';font-size:13px;cursor:pointer;}
+  .snap-empty{font-size:12px;color:var(--dim);font-style:italic;}
 
   /* Best pick highlight */
   .tp-row.best-pick{background:rgba(62,207,142,0.06);border-radius:6px;padding-left:6px;padding-right:6px;margin:0 -6px;}
@@ -183,6 +198,7 @@
       <p class="subtitle">Dynasty League · 2026 Season</p>
     </div>
     <div class="hdr-right">
+      <button class="snap-btn" onclick="openSnapModal()">📸 Snapshots</button>
       <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
       <div class="badge">
         <span class="dot loading" id="dot"></span>
@@ -207,7 +223,6 @@
   <div class="spacer"></div>
   <div class="rank-toggle">
     <button class="rtbtn active ktc-active" id="btnKTC" onclick="switchRanking('ktc')">KTC</button>
-    <button class="rtbtn" id="btnFC"   onclick="switchRanking('fc')">FantasyCalc</button>
     <button class="rtbtn" id="btnFP"   onclick="switchRanking('fp')">FantasyPros</button>
     <button class="rtbtn" id="btnSL"   onclick="switchRanking('sl')">Sleeper ADP</button>
     <button class="rtbtn" id="btnCOMP" onclick="switchRanking('comp')">⚡ Composite</button>
@@ -223,7 +238,19 @@
   <a href="https://keeptradecut.com/dynasty-rankings/rookie-rankings" target="_blank">keeptradecut.com ↗</a>
 </div>
 
-<div id="main">
+<div id="snapModal" class="snap-modal" onclick="if(event.target===this)closeSnapModal()">
+  <div class="snap-box">
+    <div class="snap-title">📸 Snapshots</div>
+    <div class="snap-desc">
+      Friere den aktuellen Stand ein — KTC-Werte, Rankings und Draft-Noten. In 3, 6, 9 oder 12 Monaten kannst du die HTML-Datei herunterladen und mit dem aktuellen Stand vergleichen.
+    </div>
+    <div class="snap-list" id="snapList"></div>
+    <div class="snap-actions">
+      <button class="snap-create" onclick="createSnapshot()">+ Snapshot erstellen</button>
+      <button class="snap-close" onclick="closeSnapModal()">Schließen</button>
+    </div>
+  </div>
+</div>
   <div class="center">
     <div class="spinner"></div>
     <p class="load-txt" id="loadTxt">Sleeper Draft laden…</p>
@@ -402,134 +429,63 @@ let tradeBalances={};
 let curTab="picks";
 let posFilter="ALL";
 let sortCol="pick",sortDir=1;
-let rankingMode="ktc"; // "ktc" | "fc"
-let fcData=null;       // FantasyCalc data once loaded
-let fcLoading=false;
+let rankingMode="ktc"; // "ktc" | "fp" | "sl" | "comp"
 const LEAGUE_ID="1312799736218017792";
-const LEAGUE_SIZE=14; // ← 14 Teams
+const LEAGUE_SIZE=14;
 
-// ── Active ranking helpers (abstracted over KTC/FC/FP/SL/COMP) ───────────────
+// ── Active ranking helpers ────────────────────────────────────────────────────
 function getActiveRank(row){
-  if(rankingMode==='ktc')  return row.ktcRank;
-  if(rankingMode==='fc')   return row.fcRank;
   if(rankingMode==='fp')   return row.fpRank;
   if(rankingMode==='sl')   return row.slRank;
   if(rankingMode==='comp') return row.compRank;
   return row.ktcRank;
 }
 function getActiveValue(row){
-  if(rankingMode==='ktc')  return row.ktcValue;
-  if(rankingMode==='fc')   return row.fcValue;
-  if(rankingMode==='fp')   return row.fpAdp   != null ? Math.round(1000/row.fpAdp*10) : null;
-  if(rankingMode==='sl')   return row.slAdp   != null ? Math.round(1000/row.slAdp*10) : null;
-  if(rankingMode==='comp') return row.compScore!= null ? Math.round(row.compScore*100) : null;
+  if(rankingMode==='fp')   return row.fpAdp   != null ? Math.round(10000/row.fpAdp) : null;
+  if(rankingMode==='sl')   return row.slAdp   != null ? Math.round(10000/row.slAdp) : null;
+  if(rankingMode==='comp') return row.compScore!= null ? Math.round(row.compScore*10000) : null;
   return row.ktcValue;
 }
 function getActiveTier(row){ return rankingMode==='ktc' ? row.ktcTier : null; }
-function getActiveTrend(row){ return row.ktcTrend; }
 function getActiveMax(){
-  if(rankingMode==='ktc')  return KTC_MAX;
-  if(rankingMode==='fc')   return FC_MAX;
-  if(rankingMode==='fp'||rankingMode==='sl') return 1000; // rank 1 → value 1000
-  if(rankingMode==='comp') return 100; // compScore 0-1 → *100
+  if(rankingMode==='fp'||rankingMode==='sl') return 10000;
+  if(rankingMode==='comp') return 10000;
   return KTC_MAX;
 }
-function getActiveLabel(){ return {ktc:'KTC',fc:'FantasyCalc',fp:'FantasyPros',sl:'Sleeper ADP',comp:'Composite'}[rankingMode]||'KTC'; }
+function getActiveLabel(){ return {ktc:'KTC',fp:'FantasyPros',sl:'Sleeper ADP',comp:'Composite'}[rankingMode]||'KTC'; }
 
-// ── Composite rank (average of available ranks, lower=better) ─────────────────
+// ── Composite (KTC + FP + SL average) ────────────────────────────────────────
 function buildComposite(){
   allRows.forEach(r=>{
     const ranks=[];
-    if(r.ktcRank)  ranks.push(r.ktcRank);
-    if(r.fcRank)   ranks.push(r.fcRank);
-    if(r.fpRank)   ranks.push(r.fpRank);
-    if(r.slRank)   ranks.push(r.slRank);
-    if(!ranks.length){ r.compRank=null; r.compScore=null; return; }
+    if(r.ktcRank) ranks.push(r.ktcRank);
+    if(r.fpRank)  ranks.push(r.fpRank);
+    if(r.slRank)  ranks.push(r.slRank);
+    if(!ranks.length){ r.compRank=null; r.compScore=null; r.compSpread=null; return; }
     const avg=ranks.reduce((s,v)=>s+v,0)/ranks.length;
     r.compRank=Math.round(avg);
-    // Score = inverse of avg rank (higher=better), normalized to ~0-1 for value bar
     r.compScore=Math.max(0, 1-(avg-1)/80);
-    // Disagreement: max spread across sources
     r.compSpread=ranks.length>1 ? Math.max(...ranks)-Math.min(...ranks) : 0;
+    r.compSources=ranks.length;
   });
-}
-
-// ── FantasyCalc ───────────────────────────────────────────────────────────────
-let FC_MAX=10000;
-const fcMap={};
-
-function buildFcMap(data){
-  FC_MAX=0;
-  data.forEach(item=>{
-    const p=item.player||item;
-    const name=p.name||p.playerName||"";
-    const n=norm(name);
-    const val=item.value||item.overallValue||0;
-    if(val>FC_MAX) FC_MAX=val;
-    if(n) fcMap[n]={name,pos:p.position||p.pos||"?",rank:item.overallRank||item.rank||null,value:val,nflTeam:p.maybeTeam||p.team||""};
-  });
-}
-
-function findFc(name){
-  const n=norm(name);
-  if(fcMap[n]) return fcMap[n];
-  let best=null,bs=0;
-  Object.values(fcMap).forEach(p=>{
-    const s=nameSim(name,p.name);
-    if(s>bs&&s>=0.85){bs=s;best=p;}
-  });
-  return best;
-}
-
-async function loadFC(){
-  if(fcData||fcLoading) return;
-  fcLoading=true;
-  document.getElementById("btnFC").innerHTML='<span class="fc-loading">laden…</span>';
-  try{
-    // FantasyCalc public API — dynasty, 1QB, 0.5PPR, 14 teams
-    const res=await fetch(`https://api.fantasycalc.com/values/current?isDynasty=true&numQbs=1&numTeams=${LEAGUE_SIZE}&ppr=0.5`);
-    if(!res.ok) throw new Error("FC "+res.status);
-    fcData=await res.json();
-    buildFcMap(Array.isArray(fcData)?fcData:fcData.players||[]);
-    // Enrich allRows with FC data
-    allRows.forEach(r=>{
-      const fc=findFc(r.fullName);
-      r.fcRank=fc?.rank||null;
-      r.fcValue=fc?.value||null;
-      r.fcTier=null;
-    });
-    buildComposite();
-    document.getElementById("btnFC").textContent="FantasyCalc";
-    fcLoading=false;
-    renderView();
-  } catch(e){
-    console.warn("FantasyCalc failed:",e);
-    document.getElementById("btnFC").textContent="FC (N/A)";
-    fcLoading=false;
-  }
 }
 
 // ── Ranking toggle ────────────────────────────────────────────────────────────
 const SOURCES={
-  ktc:  {label:'KTC',   cls:'ktc-active',  note:'KTC: 1QB / 0.5 PPR · Stand Mai 2026 · <a href="https://keeptradecut.com/dynasty-rankings/rookie-rankings" target="_blank">keeptradecut.com ↗</a>'},
-  fc:   {label:'FC',    cls:'fc-active',   note:'FantasyCalc: 1QB / 0.5 PPR · 14 Teams · Live · <a href="https://fantasycalc.com/rankings" target="_blank">fantasycalc.com ↗</a>'},
-  fp:   {label:'FP',    cls:'fp-active',   note:'FantasyPros ADP: Dynasty Rookie Rankings · Stand Mai 2026 · <a href="https://www.fantasypros.com" target="_blank">fantasypros.com ↗</a>'},
-  sl:   {label:'SL',    cls:'sl-active',   note:'Sleeper ADP: Dynasty 1PPR Rookie · Stand Mai 2026 · <a href="https://sleeper.com" target="_blank">sleeper.com ↗</a>'},
-  comp: {label:'COMP',  cls:'comp-active', note:'⚡ Composite: Durchschnitt aller verfügbaren Rankings (KTC · FantasyCalc · FantasyPros · Sleeper). Spread = max. Meinungsverschiedenheit zwischen Quellen.'},
+  ktc:  {cls:'ktc-active',  note:'KTC: 1QB / 0.5 PPR · Stand Mai 2026 · <a href="https://keeptradecut.com/dynasty-rankings/rookie-rankings" target="_blank">keeptradecut.com ↗</a>'},
+  fp:   {cls:'fp-active',   note:'FantasyPros ADP: Dynasty Rookie Rankings · Stand Mai 2026 · <a href="https://www.fantasypros.com" target="_blank">fantasypros.com ↗</a>'},
+  sl:   {cls:'sl-active',   note:'Sleeper ADP: Dynasty 1PPR Rookie · Stand Mai 2026 · <a href="https://sleeper.com" target="_blank">sleeper.com ↗</a>'},
+  comp: {cls:'comp-active', note:'⚡ Composite: Ø-Rank aus KTC · FantasyPros · Sleeper ADP. Spread ± = Meinungsverschiedenheit zwischen Quellen.'},
 };
+const BTN_IDS={ktc:'btnKTC',fp:'btnFP',sl:'btnSL',comp:'btnCOMP'};
 
 function switchRanking(mode){
   rankingMode=mode;
-  // Update button styles
-  ['ktc','fc','fp','sl','comp'].forEach(m=>{
-    const btn=document.getElementById('btn'+m.toUpperCase());
-    if(!btn) return;
-    btn.className='rtbtn'+(mode===m?' active '+SOURCES[m].cls:'');
+  Object.entries(BTN_IDS).forEach(([m,id])=>{
+    const btn=document.getElementById(id);
+    if(btn) btn.className='rtbtn'+(mode===m?' active '+(SOURCES[m]?.cls||''):'');
   });
-  document.getElementById('sourceNote').innerHTML=SOURCES[mode].note;
-
-  if(mode==='fc'&&!fcData&&!fcLoading){ loadFC(); return; }
-  if(mode==='comp'&&!fcData&&!fcLoading){ loadFC().then(()=>{buildComposite();renderView();}); return; }
+  document.getElementById('sourceNote').innerHTML=SOURCES[mode]?.note||'';
   if(mode==='comp') buildComposite();
   renderView();
 }
@@ -569,13 +525,12 @@ async function loadDraft(){
     const sl=findFpSl(fullName,slMap);
     return{fullName,pickNum,round:pick.round,drafter,position,
       rosterId:pick.roster_id,
-      ktcRank:ktc?.rank||null,  ktcValue:ktc?.value||null,
-      ktcTier:ktc?.tier||null,  ktcTrend:ktc?.trend||null,
+      ktcRank:ktc?.rank||null, ktcValue:ktc?.value||null,
+      ktcTier:ktc?.tier||null, ktcTrend:ktc?.trend||null,
       ktcTeam:ktc?.nflTeam||m.team||"",
-      fcRank:null, fcValue:null, fcTier:null,
       fpRank:fp?.rank||null,   fpAdp:fp?.adp||null,
       slRank:sl?.rank||null,   slAdp:sl?.adp||null, slMarketIndex:sl?.marketIndex||null,
-      compRank:null, compScore:null, compSpread:null};
+      compRank:null, compScore:null, compSpread:null, compSources:0};
   });
 
   // ── Trade analysis ────────────────────────────────────────────────────────
@@ -898,6 +853,133 @@ document.querySelectorAll(".fbtn").forEach(btn=>{
 document.getElementById("searchInput").addEventListener("input",()=>{
   if(allRows.length)renderView();
 });
+
+// ── Snapshot system ───────────────────────────────────────────────────────────
+const SNAP_KEY='rookieDraftSnapshots';
+
+function getSnapshots(){
+  try{ return JSON.parse(localStorage.getItem(SNAP_KEY)||'[]'); }
+  catch{ return []; }
+}
+function saveSnapshots(snaps){ localStorage.setItem(SNAP_KEY,JSON.stringify(snaps)); }
+
+function openSnapModal(){
+  renderSnapList();
+  document.getElementById('snapModal').classList.add('open');
+}
+function closeSnapModal(){ document.getElementById('snapModal').classList.remove('open'); }
+
+function renderSnapList(){
+  const snaps=getSnapshots();
+  const el=document.getElementById('snapList');
+  if(!snaps.length){
+    el.innerHTML=`<p class="snap-empty">Noch kein Snapshot erstellt. Erstelle deinen ersten, um den aktuellen Stand zu speichern.</p>`;
+    return;
+  }
+  el.innerHTML=snaps.map((s,i)=>`
+    <div class="snap-item">
+      <div>
+        <div class="snap-item-name">📸 ${s.label}</div>
+        <div class="snap-item-date">${s.date} · ${s.picks} Picks · ${s.sources}</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="downloadSnapshot(${i})" style="padding:5px 12px;background:var(--accent);color:#0a0c10;border:none;border-radius:6px;font-family:'DM Sans';font-weight:700;font-size:11px;cursor:pointer">↓ HTML</button>
+        <button onclick="deleteSnapshot(${i})" style="padding:5px 10px;background:transparent;color:var(--red);border:1px solid rgba(248,113,113,.3);border-radius:6px;font-family:'DM Sans';font-size:11px;cursor:pointer">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function createSnapshot(){
+  if(!allRows.length){ alert('Bitte warte bis der Draft geladen ist.'); return; }
+  const now=new Date();
+  const label=now.toLocaleDateString('de-DE',{month:'long',year:'numeric'});
+  const dateStr=now.toLocaleDateString('de-DE');
+
+  // Freeze current data into a standalone HTML blob
+  const frozenRows=allRows.map(r=>({...r}));
+  const frozenTrades={...tradeBalances};
+
+  // Build the frozen HTML — embed all data statically, no API calls
+  const snapHtml=buildSnapshotHtml(frozenRows,frozenTrades,label,dateStr);
+
+  const snaps=getSnapshots();
+  snaps.unshift({label,date:dateStr,picks:allRows.length,sources:'KTC · FP · SL',html:snapHtml});
+  if(snaps.length>12) snaps.pop(); // keep max 12 snapshots
+  saveSnapshots(snaps);
+  renderSnapList();
+  alert(`✅ Snapshot "${label}" gespeichert!`);
+}
+
+function downloadSnapshot(idx){
+  const snaps=getSnapshots();
+  const s=snaps[idx];
+  if(!s) return;
+  const blob=new Blob([s.html],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`RookieDraft_Snapshot_${s.date.replace(/\./g,'-')}.html`;
+  a.click();
+}
+
+function deleteSnapshot(idx){
+  if(!confirm('Snapshot löschen?')) return;
+  const snaps=getSnapshots();
+  snaps.splice(idx,1);
+  saveSnapshots(snaps);
+  renderSnapList();
+}
+
+function buildSnapshotHtml(rows,trades,label,dateStr){
+  // Simplified frozen view — table only, all data hardcoded
+  const tierCls=t=>['','t1','t2','t3','t4','t5'][Math.min(t||5,5)]||'t5';
+  const rankCls=r=>!r?'rnone':r<=5?'top5':r<=15?'top15':r<=30?'top30':'lower';
+
+  const tableRows=rows.sort((a,b)=>a.pickNum-b.pickNum).map(r=>`
+    <tr>
+      <td style="font-family:'Bebas Neue';font-size:20px;color:#3a4258;padding:10px 12px">${r.pickNum}<div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.6">R${r.round}</div></td>
+      <td style="font-weight:600;padding:10px 12px">${r.fullName}</td>
+      <td style="padding:10px 12px"><span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(240,180,41,.12);color:#f0b429;border:1px solid rgba(240,180,41,.25)">${r.position}</span></td>
+      <td style="font-size:11px;color:#6b7589;padding:10px 12px">${r.ktcTeam||'—'}</td>
+      <td style="font-size:12px;color:#6b7589;padding:10px 12px">${r.drafter}</td>
+      <td style="font-family:'Bebas Neue';font-size:20px;padding:10px 12px;color:${!r.ktcRank?'#3a4258':r.ktcRank<=5?'#3ecf8e':r.ktcRank<=15?'#f0b429':r.ktcRank<=30?'#60a5fa':'#6b7589'}">${r.ktcRank?'#'+r.ktcRank:'—'}</td>
+      <td style="padding:10px 12px;font-size:13px;font-weight:600">${r.ktcValue!=null?r.ktcValue.toLocaleString():'—'}</td>
+      <td style="padding:10px 12px;font-size:12px;color:${r.ktcTrend>0?'#3ecf8e':r.ktcTrend<0?'#f87171':'#6b7589'}">${r.ktcTrend!=null?(r.ktcTrend>0?'▲'+r.ktcTrend:r.ktcTrend<0?'▼'+Math.abs(r.ktcTrend):'0'):'—'}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#6b7589">${r.fpRank?'#'+r.fpRank:'—'}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#6b7589">${r.slRank?'#'+r.slRank:'—'}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#6b7589">${r.compRank?'#'+r.compRank:'—'}</td>
+    </tr>`).join('');
+
+  return`<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Snapshot · ${label}</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0a0c10;color:#e8ecf4;font-family:'DM Sans',sans-serif;padding:40px;}
+h1{font-family:'Bebas Neue';font-size:56px;line-height:.9;}h1 span{color:#f0b429;}
+.sub{font-size:11px;color:#3a4258;letter-spacing:3px;text-transform:uppercase;margin-top:8px;margin-bottom:32px;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#3a4258;padding:10px 12px;text-align:left;border-bottom:1px solid #1e2330;}
+tbody tr{border-bottom:1px solid rgba(30,35,48,.4);}
+tbody tr:hover{background:#12151c;}
+.note{margin-top:40px;padding:16px 20px;background:#12151c;border:1px solid #1e2330;border-radius:8px;font-size:12px;color:#6b7589;line-height:1.6;}
+</style></head><body>
+<h1>ROOKIE<br><span>DRAFT</span> SNAPSHOT</h1>
+<p class="sub">Dynasty League · Eingefroren: ${dateStr} · ${rows.length} Picks</p>
+<table>
+<thead><tr>
+<th>Pick</th><th>Spieler</th><th>Pos</th><th>NFL</th><th>Gedraftet von</th>
+<th>KTC #</th><th>KTC Value</th><th>30d Trend</th><th>FP Rank</th><th>SL Rank</th><th>Comp Rank</th>
+</tr></thead>
+<tbody>${tableRows}</tbody>
+</table>
+<div class="note">
+📸 <strong>Snapshot vom ${dateStr}</strong> — Alle Werte sind eingefroren.<br>
+KTC-Werte: 1QB / 0.5 PPR | FantasyPros ADP | Sleeper ADP | Composite = Ø aller drei Quellen.<br>
+Dieser Snapshot wurde automatisch aus dem Rookie Draft Board 2026 generiert.
+</div>
+</body></html>`;
+}
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 setBadge("loading","Laden…");

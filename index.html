@@ -144,22 +144,47 @@
   .rtbtn.sl-active{color:#a78bfa;}
   .rtbtn.comp-active{color:#f87171;}
 
-  /* Snapshot button */
+  /* History button & modal */
   .snap-btn{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:'DM Sans';font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap;}
   .snap-btn:hover{border-color:var(--accent);color:var(--accent);}
-  .snap-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;}
+  .snap-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:1000;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto;}
   .snap-modal.open{display:flex;}
-  .snap-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 32px;max-width:460px;width:90%;display:flex;flex-direction:column;gap:16px;box-shadow:0 24px 60px rgba(0,0,0,.4);}
-  .snap-title{font-family:'Bebas Neue';font-size:24px;letter-spacing:1px;}
+  .snap-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 32px;max-width:900px;width:100%;display:flex;flex-direction:column;gap:18px;box-shadow:0 24px 60px rgba(0,0,0,.5);}
+  .snap-title{font-family:'Bebas Neue';font-size:28px;letter-spacing:1px;}
   .snap-desc{font-size:13px;color:var(--muted);line-height:1.6;}
-  .snap-list{display:flex;flex-direction:column;gap:8px;}
-  .snap-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);}
-  .snap-item-name{font-size:13px;font-weight:500;}
-  .snap-item-date{font-size:11px;color:var(--muted);}
-  .snap-actions{display:flex;gap:10px;flex-wrap:wrap;}
-  .snap-create{padding:10px 20px;background:var(--accent);color:#0a0c10;border:none;border-radius:8px;font-family:'DM Sans';font-weight:700;font-size:13px;cursor:pointer;}
-  .snap-close{padding:10px 20px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-family:'DM Sans';font-size:13px;cursor:pointer;}
-  .snap-empty{font-size:12px;color:var(--dim);font-style:italic;}
+  .snap-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .snap-create{padding:9px 20px;background:var(--accent);color:#0a0c10;border:none;border-radius:8px;font-family:'DM Sans';font-weight:700;font-size:13px;cursor:pointer;transition:opacity .15s;}
+  .snap-create:disabled{opacity:.4;cursor:not-allowed;}
+  .snap-close{padding:9px 20px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-family:'DM Sans';font-size:13px;cursor:pointer;}
+  .snap-dl{padding:9px 18px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;font-family:'DM Sans';font-size:13px;cursor:pointer;}
+  .snap-dl:disabled{opacity:.4;cursor:not-allowed;}
+  .snap-empty{font-size:12px;color:var(--dim);font-style:italic;text-align:center;padding:28px 0;}
+  /* Tabs */
+  .hist-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);}
+  .htab{padding:9px 16px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--muted);border-bottom:2px solid transparent;font-family:'DM Sans';transition:all .15s;}
+  .htab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  /* Tables */
+  .hist-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .hist-table th{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+  .hist-table td{padding:8px 10px;border-bottom:1px solid rgba(30,35,48,.35);vertical-align:middle;}
+  .hist-table tbody tr:hover{background:var(--surface2);}
+  .delta-pos{color:var(--green);font-weight:700;}
+  .delta-neg{color:var(--red);font-weight:700;}
+  .delta-neu{color:var(--dim);}
+  /* Sparkline */
+  .spark{display:inline-flex;gap:2px;align-items:flex-end;height:22px;vertical-align:middle;}
+  .spark-bar{width:6px;border-radius:2px 2px 0 0;}
+  /* Admin pin */
+  .admin-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .admin-row input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:'DM Sans';font-size:12px;outline:none;width:130px;}
+  .admin-row input:focus{border-color:var(--accent);}
+  .pin-hint{font-size:10px;color:var(--dim);}
+  /* Snapshot list items */
+  .snap-list{display:flex;flex-direction:column;}
+  .snap-item{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap;}
+  .snap-item:last-child{border-bottom:none;}
+  .snap-item-name{font-size:13px;font-weight:600;}
+  .snap-item-meta{font-size:11px;color:var(--muted);margin-top:2px;}
 
   /* Best pick highlight */
   .tp-row.best-pick{background:rgba(62,207,142,0.06);border-radius:6px;padding-left:6px;padding-right:6px;margin:0 -6px;}
@@ -240,14 +265,25 @@
 
 <div id="snapModal" class="snap-modal" onclick="if(event.target===this)closeSnapModal()">
   <div class="snap-box">
-    <div class="snap-title">📸 Snapshots</div>
-    <div class="snap-desc">
-      Friere den aktuellen Stand ein — KTC-Werte, Rankings und Draft-Noten. In 3, 6, 9 oder 12 Monaten kannst du die HTML-Datei herunterladen und mit dem aktuellen Stand vergleichen.
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div class="snap-title">📈 Value-History</div>
+      <div class="admin-row">
+        <input type="password" id="adminPin" placeholder="Admin-PIN" oninput="checkAdminPin()">
+        <span class="pin-hint" id="pinHint">PIN für neue Snapshots</span>
+      </div>
     </div>
-    <div class="snap-list" id="snapList"></div>
+    <div class="snap-desc">Verlauf aller Liga-Snapshots — KTC-Values, Rankings und Trends über Zeit. Erstelle monatlich einen Snapshot und teile die aktualisierte HTML-Datei mit der Liga.</div>
+    <div class="hist-tabs">
+      <button class="htab active" onclick="switchHistTab('overview',this)">📊 Verlauf</button>
+      <button class="htab" onclick="switchHistTab('players',this)">🏈 Spieler-Detail</button>
+      <button class="htab" onclick="switchHistTab('list',this)">🗂 Snapshots</button>
+    </div>
+    <div id="histContent" style="min-height:180px"></div>
     <div class="snap-actions">
-      <button class="snap-create" onclick="createSnapshot()">+ Snapshot erstellen</button>
+      <button class="snap-create" id="snapCreateBtn" onclick="createSnapshot()" disabled>📸 Snapshot erstellen</button>
+      <button class="snap-dl" id="snapDlBtn" onclick="downloadUpdatedHtml()" disabled>⬇ Datei herunterladen</button>
       <button class="snap-close" onclick="closeSnapModal()">Schließen</button>
+      <span id="snapStatus" style="font-size:11px;color:var(--muted)"></span>
     </div>
   </div>
 </div>
@@ -856,131 +892,225 @@ document.getElementById("searchInput").addEventListener("input",()=>{
   if(allRows.length)renderView();
 });
 
-// ── Snapshot system ───────────────────────────────────────────────────────────
-const SNAP_KEY='rookieDraftSnapshots';
+// ── Embedded History System ───────────────────────────────────────────────────
+// Snapshots live directly in this file as JSON. Admin creates snapshot →
+// downloads updated HTML → shares file with league. Everyone sees same history.
 
-function getSnapshots(){
-  try{ return JSON.parse(localStorage.getItem(SNAP_KEY)||'[]'); }
-  catch{ return []; }
+const ADMIN_PIN = '2026'; // ← PIN hier ändern
+
+// ── SNAPSHOT DATA — wird vom Admin gepflegt ───────────────────────────────────
+// Nicht manuell bearbeiten. Wird automatisch beim Download aktualisiert.
+const EMBEDDED_SNAPSHOTS = [
+  // Beispiel-Eintrag (wird beim ersten echten Snapshot ersetzt):
+  // { label:"Mai 2026", date:"07.05.2026", picks:42, players:[{name,pos,drafter,pickNum,round,ktcRank,ktcValue,ktcTier,ktcTrend,fpRank,slRank,compRank},...] }
+];
+// ── Ende Snapshot-Daten ───────────────────────────────────────────────────────
+
+let snapshots = EMBEDDED_SNAPSHOTS.slice(); // working copy
+let histTab   = 'overview';
+let adminUnlocked = false;
+
+function checkAdminPin(){
+  const val = document.getElementById('adminPin').value;
+  adminUnlocked = (val === ADMIN_PIN);
+  const hint = document.getElementById('pinHint');
+  hint.textContent = adminUnlocked ? '✅ Admin-Zugang aktiv' : 'PIN für neue Snapshots';
+  hint.style.color  = adminUnlocked ? 'var(--green)' : 'var(--dim)';
+  document.getElementById('snapCreateBtn').disabled = !adminUnlocked || !allRows.length;
+  document.getElementById('snapDlBtn').disabled = !adminUnlocked;
 }
-function saveSnapshots(snaps){ localStorage.setItem(SNAP_KEY,JSON.stringify(snaps)); }
+
+function switchHistTab(tab, btn){
+  histTab = tab;
+  document.querySelectorAll('.htab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHistContent();
+}
 
 function openSnapModal(){
-  renderSnapList();
   document.getElementById('snapModal').classList.add('open');
+  snapshots = EMBEDDED_SNAPSHOTS.slice();
+  renderHistContent();
 }
 function closeSnapModal(){ document.getElementById('snapModal').classList.remove('open'); }
 
-function renderSnapList(){
-  const snaps=getSnapshots();
-  const el=document.getElementById('snapList');
-  if(!snaps.length){
-    el.innerHTML=`<p class="snap-empty">Noch kein Snapshot erstellt. Erstelle deinen ersten, um den aktuellen Stand zu speichern.</p>`;
+function renderHistContent(){
+  if(histTab==='overview') renderHistOverview();
+  else if(histTab==='players') renderHistPlayers();
+  else renderHistList();
+}
+
+// ── Tab 1: Verlauf — Größte Steiger/Faller zwischen zwei Snapshots ────────────
+function renderHistOverview(){
+  const el = document.getElementById('histContent');
+  if(snapshots.length < 2){
+    const n = snapshots.length;
+    el.innerHTML = `<p class="snap-empty">Mindestens 2 Snapshots nötig für den Verlauf.<br>Aktuell: <strong>${n}</strong> Snapshot${n!==1?'s':''}.${n===0?'<br>Als Admin: PIN eingeben → Snapshot erstellen → Datei herunterladen & teilen.':''}</p>`;
     return;
   }
-  el.innerHTML=snaps.map((s,i)=>`
+
+  const iA = parseInt(document.getElementById('selA')?.value ?? 0);
+  const iB = parseInt(document.getElementById('selB')?.value ?? 1);
+  const snapA = snapshots[Math.min(iA, snapshots.length-1)]; // "jetzt"
+  const snapB = snapshots[Math.min(iB, snapshots.length-1)]; // "vorher"
+
+  const mapA = {};
+  snapA.players.forEach(p=>{ mapA[p.name]=p; });
+
+  const deltas = snapB.players.map(prev=>{
+    const curr = mapA[prev.name];
+    if(!curr||!prev.ktcRank||!curr.ktcRank) return null;
+    return { name:prev.name, pos:prev.pos, drafter:prev.drafter,
+             prevRank:prev.ktcRank, currRank:curr.ktcRank,
+             prevVal:prev.ktcValue||0, currVal:curr.ktcValue||0,
+             deltaRank: prev.ktcRank - curr.ktcRank,  // positive = rank verbessert
+             deltaVal:  (curr.ktcValue||0)-(prev.ktcValue||0) };
+  }).filter(Boolean);
+
+  const risers  = [...deltas].sort((a,b)=>b.deltaRank-a.deltaRank).slice(0,10);
+  const fallers = [...deltas].sort((a,b)=>a.deltaRank-b.deltaRank).slice(0,10);
+  const opts = snapshots.map((s,i)=>`<option value="${i}">${s.label}</option>`).join('');
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <span style="font-size:11px;color:var(--dim)">Neu:</span>
+      <select id="selA" onchange="renderHistContent()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 8px;font-family:'DM Sans';font-size:12px">${opts}</select>
+      <span style="color:var(--dim)">vs. Alt:</span>
+      <select id="selB" onchange="renderHistContent()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 8px;font-family:'DM Sans';font-size:12px">${snapshots.map((s,i)=>`<option value="${i}"${i===1?' selected':''}>${s.label}</option>`).join('')}</select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;overflow-x:auto">
+      <div>
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:10px">📈 Größte Steiger</div>
+        <table class="hist-table"><thead><tr><th>Spieler</th><th>Pos</th><th>Alt #</th><th>Neu #</th><th>Δ Rank</th><th>Δ Value</th></tr></thead>
+        <tbody>${risers.map(p=>`<tr>
+          <td style="font-weight:500;white-space:nowrap">${p.name}</td>
+          <td><span class="pos-badge ${p.pos}" style="font-size:9px;padding:1px 5px">${p.pos}</span></td>
+          <td style="color:var(--muted)">#${p.prevRank}</td>
+          <td style="color:var(--text);font-weight:600">#${p.currRank}</td>
+          <td class="${p.deltaRank>0?'delta-pos':p.deltaRank<0?'delta-neg':'delta-neu'}">${p.deltaRank>0?'▲'+p.deltaRank:p.deltaRank<0?'▼'+Math.abs(p.deltaRank):'—'}</td>
+          <td class="${p.deltaVal>0?'delta-pos':p.deltaVal<0?'delta-neg':'delta-neu'}" style="font-size:11px">${p.deltaVal>0?'+'+p.deltaVal.toLocaleString():p.deltaVal<0?p.deltaVal.toLocaleString():'—'}</td>
+        </tr>`).join('')}</tbody></table>
+      </div>
+      <div>
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:10px">📉 Größte Faller</div>
+        <table class="hist-table"><thead><tr><th>Spieler</th><th>Pos</th><th>Alt #</th><th>Neu #</th><th>Δ Rank</th><th>Δ Value</th></tr></thead>
+        <tbody>${fallers.map(p=>`<tr>
+          <td style="font-weight:500;white-space:nowrap">${p.name}</td>
+          <td><span class="pos-badge ${p.pos}" style="font-size:9px;padding:1px 5px">${p.pos}</span></td>
+          <td style="color:var(--muted)">#${p.prevRank}</td>
+          <td style="color:var(--text);font-weight:600">#${p.currRank}</td>
+          <td class="${p.deltaRank>0?'delta-pos':p.deltaRank<0?'delta-neg':'delta-neu'}">${p.deltaRank>0?'▲'+p.deltaRank:p.deltaRank<0?'▼'+Math.abs(p.deltaRank):'—'}</td>
+          <td class="${p.deltaVal>0?'delta-pos':p.deltaVal<0?'delta-neg':'delta-neu'}" style="font-size:11px">${p.deltaVal>0?'+'+p.deltaVal.toLocaleString():p.deltaVal<0?p.deltaVal.toLocaleString():'—'}</td>
+        </tr>`).join('')}</tbody></table>
+      </div>
+    </div>`;
+}
+
+// ── Tab 2: Spieler-Detail — Rank-Verlauf mit Sparkline ────────────────────────
+function renderHistPlayers(){
+  const el = document.getElementById('histContent');
+  if(!snapshots.length){
+    el.innerHTML = `<p class="snap-empty">Noch keine Snapshots vorhanden.</p>`; return;
+  }
+  const players = snapshots[0].players.slice().sort((a,b)=>(a.ktcRank||999)-(b.ktcRank||999));
+  el.innerHTML = `<div style="overflow-x:auto"><table class="hist-table">
+    <thead><tr>
+      <th>Spieler</th><th>Pos</th><th>Von</th>
+      ${snapshots.map(s=>`<th style="white-space:nowrap">${s.label}</th>`).join('')}
+      <th>Verlauf</th><th>Gesamt Δ</th>
+    </tr></thead>
+    <tbody>${players.map(p=>{
+      const vals = snapshots.map(snap=>(snap.players.find(x=>x.name===p.name)||{}).ktcRank||null);
+      const defined = vals.filter(v=>v!=null);
+      if(!defined.length) return '';
+      const maxV=Math.max(...defined), minV=Math.min(...defined), spread=maxV-minV||1;
+      const sparkHtml = vals.map(v=>{
+        if(v==null) return `<div class="spark-bar" style="height:3px;background:var(--dim);opacity:.25"></div>`;
+        const h = Math.max(3, Math.round(22-((v-minV)/spread)*18));
+        const col = v<=5?'var(--green)':v<=15?'var(--accent)':v<=30?'var(--blue)':'var(--muted)';
+        return `<div class="spark-bar" style="height:${h}px;background:${col}"></div>`;
+      }).join('');
+      const curr=vals[0], old=vals[vals.length-1];
+      const totalDelta = (curr&&old) ? old-curr : null;
+      return `<tr>
+        <td style="font-weight:500;white-space:nowrap">${p.name}</td>
+        <td><span class="pos-badge ${p.pos}" style="font-size:9px;padding:1px 5px">${p.pos}</span></td>
+        <td style="font-size:11px;color:var(--muted);white-space:nowrap">${p.drafter}</td>
+        ${vals.map(v=>v!=null
+          ?`<td style="font-family:'Bebas Neue';font-size:17px;color:${v<=5?'var(--green)':v<=15?'var(--accent)':v<=30?'var(--blue)':'var(--muted)'}">#${v}</td>`
+          :`<td style="color:var(--dim);font-size:11px">—</td>`).join('')}
+        <td><span class="spark">${sparkHtml}</span></td>
+        <td class="${totalDelta>0?'delta-pos':totalDelta<0?'delta-neg':'delta-neu'}">${totalDelta!=null?(totalDelta>0?'▲'+totalDelta:totalDelta<0?'▼'+Math.abs(totalDelta):'='):'—'}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+// ── Tab 3: Snapshot-Liste ─────────────────────────────────────────────────────
+function renderHistList(){
+  const el = document.getElementById('histContent');
+  if(!snapshots.length){
+    el.innerHTML=`<p class="snap-empty">Noch keine Snapshots. Als Admin PIN eingeben und ersten Snapshot erstellen.</p>`; return;
+  }
+  el.innerHTML=`<div class="snap-list">${snapshots.map((s,i)=>`
     <div class="snap-item">
       <div>
         <div class="snap-item-name">📸 ${s.label}</div>
-        <div class="snap-item-date">${s.date} · ${s.picks} Picks · ${s.sources}</div>
+        <div class="snap-item-meta">${s.date} · ${s.picks} Picks · ${s.players.length} Spieler mit KTC-Daten</div>
       </div>
-      <div style="display:flex;gap:8px">
-        <button onclick="downloadSnapshot(${i})" style="padding:5px 12px;background:var(--accent);color:#0a0c10;border:none;border-radius:6px;font-family:'DM Sans';font-weight:700;font-size:11px;cursor:pointer">↓ HTML</button>
-        <button onclick="deleteSnapshot(${i})" style="padding:5px 10px;background:transparent;color:var(--red);border:1px solid rgba(248,113,113,.3);border-radius:6px;font-family:'DM Sans';font-size:11px;cursor:pointer">✕</button>
-      </div>
-    </div>`).join('');
+      ${adminUnlocked?`<button onclick="deleteSnapshot(${i})" style="padding:5px 10px;background:transparent;color:var(--red);border:1px solid rgba(248,113,113,.3);border-radius:6px;font-family:'DM Sans';font-size:11px;cursor:pointer">✕ Löschen</button>`
+       :`<span style="font-size:10px;color:var(--dim)">#${i+1}${i===0?' · Neuester':''}</span>`}
+    </div>`).join('')}
+  </div>`;
 }
 
+// ── Snapshot erstellen ────────────────────────────────────────────────────────
 function createSnapshot(){
-  if(!allRows.length){ alert('Bitte warte bis der Draft geladen ist.'); return; }
+  if(!allRows.length||!adminUnlocked) return;
   const now=new Date();
   const label=now.toLocaleDateString('de-DE',{month:'long',year:'numeric'});
   const dateStr=now.toLocaleDateString('de-DE');
+  const players=allRows.map(r=>({
+    name:r.fullName, pos:r.position, drafter:r.drafter,
+    pickNum:r.pickNum, round:r.round,
+    ktcRank:r.ktcRank, ktcValue:r.ktcValue, ktcTier:r.ktcTier, ktcTrend:r.ktcTrend,
+    fpRank:r.fpRank, slRank:r.slRank, compRank:r.compRank,
+  }));
+  // Prepend; avoid duplicate label
+  snapshots = snapshots.filter(s=>s.label!==label);
+  snapshots.unshift({label,date:dateStr,picks:allRows.length,players});
+  if(snapshots.length>24) snapshots.pop();
 
-  // Freeze current data into a standalone HTML blob
-  const frozenRows=allRows.map(r=>({...r}));
-  const frozenTrades={...tradeBalances};
-
-  // Build the frozen HTML — embed all data statically, no API calls
-  const snapHtml=buildSnapshotHtml(frozenRows,frozenTrades,label,dateStr);
-
-  const snaps=getSnapshots();
-  snaps.unshift({label,date:dateStr,picks:allRows.length,sources:'KTC · FP · SL',html:snapHtml});
-  if(snaps.length>12) snaps.pop(); // keep max 12 snapshots
-  saveSnapshots(snaps);
-  renderSnapList();
-  alert(`✅ Snapshot "${label}" gespeichert!`);
-}
-
-function downloadSnapshot(idx){
-  const snaps=getSnapshots();
-  const s=snaps[idx];
-  if(!s) return;
-  const blob=new Blob([s.html],{type:'text/html'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=`RookieDraft_Snapshot_${s.date.replace(/\./g,'-')}.html`;
-  a.click();
+  const status=document.getElementById('snapStatus');
+  status.textContent=`✅ Snapshot "${label}" erstellt — jetzt herunterladen & mit der Liga teilen!`;
+  status.style.color='var(--green)';
+  document.getElementById('snapDlBtn').disabled=false;
+  renderHistContent();
+  setTimeout(()=>{status.textContent='';},6000);
 }
 
 function deleteSnapshot(idx){
-  if(!confirm('Snapshot löschen?')) return;
-  const snaps=getSnapshots();
-  snaps.splice(idx,1);
-  saveSnapshots(snaps);
-  renderSnapList();
+  if(!adminUnlocked||!confirm('Snapshot löschen?')) return;
+  snapshots.splice(idx,1);
+  renderHistContent();
 }
 
-function buildSnapshotHtml(rows,trades,label,dateStr){
-  // Simplified frozen view — table only, all data hardcoded
-  const tierCls=t=>['','t1','t2','t3','t4','t5'][Math.min(t||5,5)]||'t5';
-  const rankCls=r=>!r?'rnone':r<=5?'top5':r<=15?'top15':r<=30?'top30':'lower';
-
-  const tableRows=rows.sort((a,b)=>a.pickNum-b.pickNum).map(r=>`
-    <tr>
-      <td style="font-family:'Bebas Neue';font-size:20px;color:#3a4258;padding:10px 12px">${r.pickNum}<div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.6">R${r.round}</div></td>
-      <td style="font-weight:600;padding:10px 12px">${r.fullName}</td>
-      <td style="padding:10px 12px"><span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(240,180,41,.12);color:#f0b429;border:1px solid rgba(240,180,41,.25)">${r.position}</span></td>
-      <td style="font-size:11px;color:#6b7589;padding:10px 12px">${r.ktcTeam||'—'}</td>
-      <td style="font-size:12px;color:#6b7589;padding:10px 12px">${r.drafter}</td>
-      <td style="font-family:'Bebas Neue';font-size:20px;padding:10px 12px;color:${!r.ktcRank?'#3a4258':r.ktcRank<=5?'#3ecf8e':r.ktcRank<=15?'#f0b429':r.ktcRank<=30?'#60a5fa':'#6b7589'}">${r.ktcRank?'#'+r.ktcRank:'—'}</td>
-      <td style="padding:10px 12px;font-size:13px;font-weight:600">${r.ktcValue!=null?r.ktcValue.toLocaleString():'—'}</td>
-      <td style="padding:10px 12px;font-size:12px;color:${r.ktcTrend>0?'#3ecf8e':r.ktcTrend<0?'#f87171':'#6b7589'}">${r.ktcTrend!=null?(r.ktcTrend>0?'▲'+r.ktcTrend:r.ktcTrend<0?'▼'+Math.abs(r.ktcTrend):'0'):'—'}</td>
-      <td style="padding:10px 12px;font-size:12px;color:#6b7589">${r.fpRank?'#'+r.fpRank:'—'}</td>
-      <td style="padding:10px 12px;font-size:12px;color:#6b7589">${r.slRank?'#'+r.slRank:'—'}</td>
-      <td style="padding:10px 12px;font-size:12px;color:#6b7589">${r.compRank?'#'+r.compRank:'—'}</td>
-    </tr>`).join('');
-
-  return`<!DOCTYPE html>
-<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Snapshot · ${label}</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:#0a0c10;color:#e8ecf4;font-family:'DM Sans',sans-serif;padding:40px;}
-h1{font-family:'Bebas Neue';font-size:56px;line-height:.9;}h1 span{color:#f0b429;}
-.sub{font-size:11px;color:#3a4258;letter-spacing:3px;text-transform:uppercase;margin-top:8px;margin-bottom:32px;}
-table{width:100%;border-collapse:collapse;}
-th{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#3a4258;padding:10px 12px;text-align:left;border-bottom:1px solid #1e2330;}
-tbody tr{border-bottom:1px solid rgba(30,35,48,.4);}
-tbody tr:hover{background:#12151c;}
-.note{margin-top:40px;padding:16px 20px;background:#12151c;border:1px solid #1e2330;border-radius:8px;font-size:12px;color:#6b7589;line-height:1.6;}
-</style></head><body>
-<h1>ROOKIE<br><span>DRAFT</span> SNAPSHOT</h1>
-<p class="sub">Dynasty League · Eingefroren: ${dateStr} · ${rows.length} Picks</p>
-<table>
-<thead><tr>
-<th>Pick</th><th>Spieler</th><th>Pos</th><th>NFL</th><th>Gedraftet von</th>
-<th>KTC #</th><th>KTC Value</th><th>30d Trend</th><th>FP Rank</th><th>SL Rank</th><th>Comp Rank</th>
-</tr></thead>
-<tbody>${tableRows}</tbody>
-</table>
-<div class="note">
-📸 <strong>Snapshot vom ${dateStr}</strong> — Alle Werte sind eingefroren.<br>
-KTC-Werte: 1QB / 0.5 PPR | FantasyPros ADP | Sleeper ADP | Composite = Ø aller drei Quellen.<br>
-Dieser Snapshot wurde automatisch aus dem Rookie Draft Board 2026 generiert.
-</div>
-</body></html>`;
+// ── Datei herunterladen mit eingebetteten Snapshots ───────────────────────────
+function downloadUpdatedHtml(){
+  if(!adminUnlocked) return;
+  const src=document.documentElement.outerHTML;
+  // Replace the EMBEDDED_SNAPSHOTS array in the source with current snapshots
+  const json=JSON.stringify(snapshots,null,2);
+  const updated=src.replace(
+    /const EMBEDDED_SNAPSHOTS = \[[\s\S]*?\];(\s*\/\/ ── Ende)/,
+    `const EMBEDDED_SNAPSHOTS = ${json};\n$1`
+  );
+  const blob=new Blob([updated],{type:'text/html;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`RookieDraftBoard_${new Date().toLocaleDateString('de-DE').replace(/\./g,'-')}.html`;
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
